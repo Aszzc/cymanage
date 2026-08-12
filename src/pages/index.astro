@@ -30,7 +30,7 @@ const title = '册管家 · 宣传册库存';
       <div id="errorState" class="state-card hidden"><div class="state-icon">!</div><h2>暂时无法加载数据</h2><p id="errorText"></p><button class="btn primary" id="retry">重新加载</button></div>
 
       <section class="page active" id="manage">
-        <header class="page-head"><div><p class="eyebrow">BROCHURE INVENTORY</p><h1>宣传册管理</h1><p>快速查看库存状态、盘点并维护宣传册。</p></div><button class="btn primary" data-open="brochureDialog">＋ 新增宣传册</button></header>
+        <header class="page-head"><div><p class="eyebrow">BROCHURE INVENTORY</p><h1>宣传册管理</h1><p>快速查看库存状态、盘点并维护宣传册。</p></div><div class="head-actions"><button class="btn subtle" data-open="categoryDialog">分类管理</button><button class="btn primary" data-open="brochureDialog">＋ 新增宣传册</button></div></header>
         <div class="stats" id="stats">
           <article class="stat glass"><span>宣传册</span><strong data-stat="brochure_count">—</strong><small>正在统计</small></article>
           <article class="stat glass"><span>库存总量</span><strong data-stat="total_stock">—</strong><small>当前可用份数</small></article>
@@ -42,7 +42,6 @@ const title = '册管家 · 宣传册库存';
           <select id="categoryFilter" aria-label="分类筛选"><option value="">全部分类</option></select>
           <select id="stockFilter" aria-label="库存筛选"><option value="">全部库存</option><option value="low">库存紧张</option><option value="normal">库存充足</option></select>
           <label class="archive-toggle"><input id="showArchived" type="checkbox" /><span>查看归档</span></label>
-          <button class="btn subtle" data-open="categoryDialog">分类管理</button>
         </div>
         <div class="brochure-grid" id="brochureGrid"></div>
       </section>
