@@ -65,6 +65,15 @@ async function migrateV2(db) {
   ]);
 }
 
+async function migrateV3(db) {
+  await db.prepare(`CREATE TABLE IF NOT EXISTS brochure_covers (
+    key TEXT PRIMARY KEY,
+    data BLOB NOT NULL,
+    content_type TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`).run();
+}
+
 export async function getDb(env) {
   if (!env.DB) throw Object.assign(new Error('DB 资源尚未绑定'), { status: 503, code: 'BINDING_MISSING' });
   const db = env.DB;
@@ -77,6 +86,10 @@ export async function getDb(env) {
   if (!applied.has(2)) {
     await migrateV2(db);
     await db.prepare('INSERT OR IGNORE INTO schema_migrations(version) VALUES(2)').run();
+  }
+  if (!applied.has(3)) {
+    await migrateV3(db);
+    await db.prepare('INSERT OR IGNORE INTO schema_migrations(version) VALUES(3)').run();
   }
   return db;
 }

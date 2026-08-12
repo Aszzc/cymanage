@@ -132,9 +132,9 @@ async function compressCover(file) {
   const bitmap = await createImageBitmap(file), canvas = document.createElement('canvas'); canvas.width = 900; canvas.height = 540;
   const context = canvas.getContext('2d'), scale = Math.max(canvas.width / bitmap.width, canvas.height / bitmap.height), width = bitmap.width * scale, height = bitmap.height * scale;
   context.drawImage(bitmap, (canvas.width-width)/2, (canvas.height-height)/2, width, height); bitmap.close();
-  let quality = .84, blob;
-  do { blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', quality)); quality -= .1; } while (blob.size > 500 * 1024 && quality >= .44);
-  if (!blob || blob.size > 600 * 1024) throw new Error('图片压缩失败，请换一张较小的图片');
+  let quality = .82, blob;
+  do { blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', quality)); quality -= .1; } while (blob.size > 250 * 1024 && quality >= .42);
+  if (!blob || blob.size > 350 * 1024) throw new Error('图片压缩失败，请换一张较小的图片');
   return new File([blob], 'cover.webp', { type: 'image/webp' });
 }
 

@@ -10,7 +10,9 @@ export async function onRequestPatch({ request, env, params }) {
     const coverKey = body.coverKey === undefined ? current.cover_key : text(body.coverKey, '封面', 200, false) || null;
     await db.prepare('UPDATE brochures SET name=?,category_id=?,cover_key=?,updated_at=CURRENT_TIMESTAMP WHERE id=?')
       .bind(name, categoryId, coverKey, id).run();
-    if (current.cover_key && current.cover_key !== coverKey && env.COVERS) await env.COVERS.delete(current.cover_key);
+    if (current.cover_key && current.cover_key !== coverKey) {
+      await db.prepare('DELETE FROM brochure_covers WHERE key=?').bind(current.cover_key).run();
+    }
     return json({ ok: true });
   } catch (error) { return handleError(error); }
 }

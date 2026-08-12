@@ -34,6 +34,13 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
   applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS brochure_covers (
+  key TEXT PRIMARY KEY,
+  data BLOB NOT NULL,
+  content_type TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TRIGGER IF NOT EXISTS movement_stock_guard BEFORE INSERT ON stock_movements
 WHEN NEW.legacy_id IS NULL AND NEW.delta < 0
   AND COALESCE((SELECT stock FROM brochures WHERE id=NEW.brochure_id),-1) + NEW.delta < 0
@@ -53,4 +60,4 @@ CREATE INDEX IF NOT EXISTS idx_movements_person ON stock_movements(person);
 CREATE INDEX IF NOT EXISTS idx_movements_type ON stock_movements(movement_type);
 
 INSERT OR IGNORE INTO categories(id,name) VALUES(1,'产品宣传册'),(2,'行业解决方案');
-INSERT OR IGNORE INTO schema_migrations(version) VALUES(1),(2);
+INSERT OR IGNORE INTO schema_migrations(version) VALUES(1),(2),(3);

@@ -1,17 +1,17 @@
+import { getDb } from '../../_lib/db.js';
 import { fail, handleError } from '../../_lib/http.js';
 
-export async function onRequestGet({ env, params, request }) {
+export async function onRequestGet({ env, params }) {
   try {
-    if (!env.COVERS) return fail('封面存储不可用', 503, 'COVERS_UNAVAILABLE');
     if (!/^[a-f0-9-]+\.(webp|jpg|png)$/i.test(params.key)) return fail('无效的封面地址', 400);
-    const object = await env.COVERS.get(params.key, { onlyIf: request.headers });
+    const db = await getDb(env);
+    const object = await db.prepare('SELECT data,content_type FROM brochure_covers WHERE key=?').bind(params.key).first();
     if (!object) return fail('封面不存在', 404);
-    if (!object.body) return new Response(null, { status: 304, headers: { etag: object.httpEtag } });
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set('etag', object.httpEtag);
-    headers.set('cache-control', 'public, max-age=31536000, immutable');
-    headers.set('x-content-type-options', 'nosniff');
-    return new Response(object.body, { headers });
+    const bytes = object.data instanceof ArrayBuffer ? new Uint8Array(object.data) : Uint8Array.from(object.data);
+    return new Response(bytes, { headers: {
+      'content-type': object.content_type,
+      'cache-control': 'public, max-age=31536000, immutable',
+      'x-content-type-options': 'nosniff',
+    } });
   } catch (error) { return handleError(error); }
 }

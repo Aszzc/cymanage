@@ -7,8 +7,3 @@ binding = "DB"
 database_name = "cymanage"
 database_id = "c5709ee2-0b3a-4803-87d7-1da94cc3025c"
 preview_database_id = "c5709ee2-0b3a-4803-87d7-1da94cc3025c"
-
-[[r2_buckets]]
-binding = "COVERS"
-bucket_name = "cymanage-covers"
-preview_bucket_name = "cymanage-covers"
