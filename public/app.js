@@ -139,14 +139,26 @@ function openQuickDialog(book) {
   $('#quickDialog').dataset.bookId = book.id;
   $('#quickBookName').textContent = book.name;
   $('#quickBookStock').textContent = `${book.stock} 份`;
+  $('#quickActions').classList.remove('hidden'); $('#quickMovementForm').classList.add('hidden');
   $('#quickDialog').showModal();
 }
 
-function openRegister(book, movement = 'receive') {
-  state.movement = movement;
-  $$('[data-movement]').forEach((item) => item.classList.toggle('active', item.dataset.movement === movement));
-  $('#quickDialog').close(); showPage('register'); $('#movementBrochure').value = book.id; updateStockPreview();
-  setTimeout(() => $('#person').focus(), 50);
+function openQuickMovement(movement) {
+  $('#quickDialog').dataset.movement = movement;
+  $('#quickActions').classList.add('hidden'); $('#quickMovementForm').classList.remove('hidden');
+  $('#quickModeTitle').textContent = movement === 'receive' ? '领用登记' : '归还登记';
+  $('#quickModeHint').textContent = movement === 'receive' ? '登记领出数量' : '登记归还数量';
+  $('#quickModeIcon').textContent = movement === 'receive' ? '↗' : '↙';
+  $('#quickPerson').value = localStorage.getItem('cymanage-person') || '';
+  $('#quickQuantity').value = 1; updateQuickExpected(); setTimeout(() => $('#quickPerson').focus(), 30);
+}
+
+function updateQuickExpected() {
+  const book = state.brochures.find((item) => item.id === Number($('#quickDialog').dataset.bookId));
+  if (!book) return; const quantity = Number($('#quickQuantity').value || 0), movement = $('#quickDialog').dataset.movement;
+  const expected = book.stock + (movement === 'receive' ? -quantity : quantity), invalid = movement === 'receive' && expected < 0;
+  $('#quickExpected').textContent = `${expected} 份`; $('#quickError').textContent = invalid ? `库存不足，最多可领取 ${book.stock} 份` : '';
+  $('#quickMovementForm button[type="submit"]').disabled = invalid;
 }
 
 function openAdjust(book) {
@@ -207,7 +219,9 @@ $('#brochureGrid').addEventListener('click', (event) => {
   if (button.dataset.action === 'restore') confirmAction({ title:'恢复宣传册', text:`确认恢复“${book.name}”？`, action: async () => api(`/api/brochures/${book.id}/restore`, { method:'POST' }) });
 });
 $('#brochureGrid').addEventListener('keydown',(event)=>{if((event.key==='Enter'||event.key===' ')&&!event.target.closest('[data-action]')){event.preventDefault();const card=event.target.closest('[data-book-id]');const book=state.brochures.find((item)=>item.id===Number(card?.dataset.bookId));if(book)openQuickDialog(book);}});
-$('#quickDialog').addEventListener('click',(event)=>{const button=event.target.closest('[data-quick]');if(!button)return;const book=state.brochures.find((item)=>item.id===Number($('#quickDialog').dataset.bookId));if(!book)return;if(button.dataset.quick==='receive'||button.dataset.quick==='return')openRegister(book,button.dataset.quick);if(button.dataset.quick==='adjust')openAdjust(book);if(button.dataset.quick==='edit'){$('#quickDialog').close();openBookDialog(book);}});
+$('#quickDialog').addEventListener('click',(event)=>{const button=event.target.closest('[data-quick]');if(!button)return;const book=state.brochures.find((item)=>item.id===Number($('#quickDialog').dataset.bookId));if(!book)return;if(button.dataset.quick==='receive'||button.dataset.quick==='return')openQuickMovement(button.dataset.quick);if(button.dataset.quick==='adjust')openAdjust(book);if(button.dataset.quick==='edit'){$('#quickDialog').close();openBookDialog(book);}});
+$('#quickBack').onclick=()=>{$('#quickMovementForm').classList.add('hidden');$('#quickActions').classList.remove('hidden');};$('#quickQuantity').oninput=updateQuickExpected;
+$('#quickMovementForm').onsubmit=async(event)=>{event.preventDefault();setBusy(event.currentTarget,true,'正在提交…');try{const bookId=Number($('#quickDialog').dataset.bookId),person=$('#quickPerson').value,movement=$('#quickDialog').dataset.movement;await api('/api/movements',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({brochureId:bookId,person,type:movement,quantity:Number($('#quickQuantity').value)})});localStorage.setItem('cymanage-person',person);$('#quickDialog').close();await loadSummary(false);toast(movement==='receive'?'领用登记成功':'归还登记成功');}catch(error){toast(error.message,'error');}finally{setBusy(event.currentTarget,false);}};
 
 $('#brochureForm').onsubmit = async (event) => { event.preventDefault(); setBusy(event.currentTarget, true, '正在保存…'); try { const id = $('#brochureId').value, coverKey = await uploadCover(), payload = { name:$('#brochureName').value, categoryId:Number($('#brochureCategory').value) }; if (!id) payload.stock = Number($('#brochureStock').value); if (coverKey !== undefined) payload.coverKey = coverKey; await api(id ? `/api/brochures/${id}` : '/api/brochures', { method:id ? 'PATCH':'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload) }); $('#brochureDialog').close(); await loadSummary(false); toast(id ? '宣传册已更新':'宣传册已添加'); } catch (error) { toast(error.message,'error'); } finally { setBusy(event.currentTarget,false); } };
 $('#movementForm').onsubmit = async (event) => { event.preventDefault(); setBusy(event.currentTarget,true,'正在登记…'); try { const person=$('#person').value; await api('/api/movements',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({brochureId:Number($('#movementBrochure').value),person,type:state.movement,quantity:Number($('#quantity').value)})}); localStorage.setItem('cymanage-person',person); $('#quantity').value=1; await loadSummary(false); toast('库存登记成功'); } catch(error){toast(error.message,'error');} finally{setBusy(event.currentTarget,false);} };
