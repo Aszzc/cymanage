@@ -2,6 +2,8 @@
 
 Astro + Cloudflare Pages + D1 的宣传册库存登记系统。
 
+部署由 `main` 分支的每次提交自动触发。
+
 ## 部署到 Cloudflare Pages
 
 1. 在 Cloudflare D1 创建数据库 `brochure-ledger`，将数据库 ID 填入 `wrangler.toml`。
