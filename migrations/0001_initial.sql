@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS brochures (
   name TEXT NOT NULL UNIQUE,
   category_id INTEGER NOT NULL REFERENCES categories(id),
   stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0),
+  cover_url TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

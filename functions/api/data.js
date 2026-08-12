@@ -12,7 +12,7 @@ async function ensureSchema(db) {
       'CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)'
     ),
     db.prepare(
-      'CREATE TABLE IF NOT EXISTS brochures (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, category_id INTEGER NOT NULL REFERENCES categories(id), stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)'
+      'CREATE TABLE IF NOT EXISTS brochures (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, category_id INTEGER NOT NULL REFERENCES categories(id), stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0), cover_url TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)'
     ),
     db.prepare(
       "CREATE TABLE IF NOT EXISTS operations (id INTEGER PRIMARY KEY AUTOINCREMENT, brochure_id INTEGER NOT NULL REFERENCES brochures(id), person TEXT NOT NULL, operation_type TEXT NOT NULL CHECK(operation_type IN ('receive', 'return')), quantity INTEGER NOT NULL CHECK(quantity > 0), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
@@ -20,6 +20,10 @@ async function ensureSchema(db) {
     db.prepare("INSERT OR IGNORE INTO categories (id, name) VALUES (1, '\u4ea7\u54c1\u5ba3\u4f20\u518c')"),
     db.prepare("INSERT OR IGNORE INTO categories (id, name) VALUES (2, '\u884c\u4e1a\u89e3\u51b3\u65b9\u6848')"),
   ]);
+  const columns = await db.prepare('PRAGMA table_info(brochures)').all();
+  if (!columns.results.some((column) => column.name === 'cover_url')) {
+    await db.prepare('ALTER TABLE brochures ADD COLUMN cover_url TEXT').run();
+  }
 }
 
 export async function onRequestGet({ env }) {
@@ -31,7 +35,7 @@ export async function onRequestGet({ env }) {
     db.prepare('SELECT * FROM categories ORDER BY name').all(),
     db
       .prepare(
-        'SELECT b.id,b.name,b.stock,b.category_id,c.name category FROM brochures b JOIN categories c ON c.id=b.category_id ORDER BY b.name'
+        'SELECT b.id,b.name,b.stock,b.cover_url,b.category_id,c.name category FROM brochures b JOIN categories c ON c.id=b.category_id ORDER BY b.name'
       )
       .all(),
     db
@@ -71,8 +75,8 @@ export async function onRequestPost({ request, env }) {
         return fail('\u8bf7\u5b8c\u6574\u586b\u5199\u5ba3\u4f20\u518c\u4fe1\u606f');
       }
       await db
-        .prepare('INSERT INTO brochures(name,category_id,stock) VALUES(?,?,?)')
-        .bind(name, body.categoryId, stock)
+        .prepare('INSERT INTO brochures(name,category_id,stock,cover_url) VALUES(?,?,?,?)')
+        .bind(name, body.categoryId, stock, String(body.coverUrl || '').trim() || null)
         .run();
     } else if (body.action === 'deleteBrochure') {
       await db.prepare('DELETE FROM operations WHERE brochure_id=?').bind(body.id).run();
