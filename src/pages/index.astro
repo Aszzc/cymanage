@@ -752,6 +752,12 @@ const title = '册管家 · 宣传册库存';
         }
       }
 
+      window.openModal = openModal;
+      window.closeModal = closeModal;
+      window.goRegister = goRegister;
+      window.deleteBrochure = deleteBrochure;
+      window.deleteCategory = deleteCategory;
+
       document.querySelectorAll('.tab').forEach((tab) => {
         tab.onclick = () => {
           document.querySelectorAll('.tab, .panel').forEach((node) => node.classList.remove('active'));
