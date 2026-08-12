@@ -94,7 +94,7 @@ const title = '册管家 · 宣传册库存';
       async function deleteBrochure(id){if(!confirm('确认删除该宣传册及其操作记录？'))return;try{await send({action:'deleteBrochure',id});toast('已删除')}catch(e){toast(e.message)}}
       async function deleteCategory(id){if(!confirm('确认删除此分类？'))return;try{await send({action:'deleteCategory',id});toast('已删除')}catch(e){toast(e.message)}}
       document.addEventListener('click',(e)=>{const target=e.target.closest('[data-action]');if(!target)return;const id=Number(target.dataset.id);if(target.dataset.action==='register')goRegister(id);if(target.dataset.action==='delete-brochure')deleteBrochure(id);if(target.dataset.action==='delete-category')deleteCategory(id)});
-      $('#openModal').addEventListener('click',openModal);$('#closeModal').addEventListener('click',closeModal);$('#modal').addEventListener('click',(e)=>{if(e.target.id==='modal')closeModal()});
+      $('#openModal').addEventListener('click',openModal);$('#closeModal').addEventListener('click',closeModal);document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeModal()});
       document.querySelectorAll('.tab').forEach((tab)=>tab.addEventListener('click',()=>{document.querySelectorAll('.tab,.panel').forEach((n)=>n.classList.remove('active'));tab.classList.add('active');$('#'+tab.dataset.page).classList.add('active')}));
       $('#search').addEventListener('input',render);$('#opBrochure').addEventListener('change',remaining);
       document.querySelectorAll('.type button').forEach((btn)=>btn.addEventListener('click',()=>{type=btn.dataset.type;document.querySelectorAll('.type button').forEach((b)=>b.classList.toggle('active',b===btn))}));
