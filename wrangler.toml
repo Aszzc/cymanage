@@ -6,3 +6,6 @@ pages_build_output_dir = "dist"
 binding = "DB"
 database_name = "brochure-ledger"
 database_id = "请在 Cloudflare 创建 D1 数据库后替换此处"
+
+[assets]
+binding = "BROCHURE_ASSETS"
