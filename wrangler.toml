@@ -1,0 +1,8 @@
+name = "brochure-ledger"
+compatibility_date = "2026-08-12"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "brochure-ledger"
+database_id = "请在 Cloudflare 创建 D1 数据库后替换此处"
