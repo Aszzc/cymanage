@@ -23,4 +23,6 @@ CREATE TABLE IF NOT EXISTS operations (
 
 INSERT OR IGNORE INTO categories (id, name) VALUES (1, '产品宣传册'), (2, '行业解决方案');
 INSERT OR IGNORE INTO brochures (name, category_id, stock) VALUES
-  ('企业品牌宣传册', 1, 18), ('智能制造解决方案', 2, 2), ('云服务产品手册', 1, 8);
+  ('企业品牌宣传册', 1, 18),
+  ('智能制造解决方案', 2, 2),
+  ('云服务产品手册', 1, 8);

@@ -630,7 +630,12 @@ const title = '册管家 · 宣传册库存';
       async function load() {
         const response = await fetch('/api/data');
         if (!response.ok) {
-          toast('数据库尚未就绪，请完成 D1 绑定和迁移');
+          let message = '数据加载失败，请检查 D1 绑定';
+          try {
+            const result = await response.json();
+            if (result.error) message = result.error;
+          } catch {}
+          toast(message);
           return;
         }
         data = await response.json();

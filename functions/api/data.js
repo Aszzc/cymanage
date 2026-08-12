@@ -6,9 +6,26 @@ const json = (data, status = 200) =>
 
 const fail = (message, status = 400) => json({ error: message }, status);
 
+async function ensureSchema(db) {
+  await db.batch([
+    db.prepare(
+      'CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)'
+    ),
+    db.prepare(
+      'CREATE TABLE IF NOT EXISTS brochures (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, category_id INTEGER NOT NULL REFERENCES categories(id), stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)'
+    ),
+    db.prepare(
+      "CREATE TABLE IF NOT EXISTS operations (id INTEGER PRIMARY KEY AUTOINCREMENT, brochure_id INTEGER NOT NULL REFERENCES brochures(id), person TEXT NOT NULL, operation_type TEXT NOT NULL CHECK(operation_type IN ('receive', 'return')), quantity INTEGER NOT NULL CHECK(quantity > 0), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+    ),
+    db.prepare("INSERT OR IGNORE INTO categories (id, name) VALUES (1, '\u4ea7\u54c1\u5ba3\u4f20\u518c')"),
+    db.prepare("INSERT OR IGNORE INTO categories (id, name) VALUES (2, '\u884c\u4e1a\u89e3\u51b3\u65b9\u6848')"),
+  ]);
+}
+
 export async function onRequestGet({ env }) {
   const db = env.DB;
   if (!db) return fail('\u0044\u0031 \u6570\u636e\u5e93\u672a\u7ed1\u5b9a\uff0c\u8bf7\u5728 \u0050\u0061\u0067\u0065\u0073 \u91cc\u7ed1\u5b9a \u0044\u0042', 500);
+  await ensureSchema(db);
 
   const [categories, brochures, records] = await Promise.all([
     db.prepare('SELECT * FROM categories ORDER BY name').all(),
@@ -34,6 +51,7 @@ export async function onRequestGet({ env }) {
 export async function onRequestPost({ request, env }) {
   const db = env.DB;
   if (!db) return fail('\u0044\u0031 \u6570\u636e\u5e93\u672a\u7ed1\u5b9a\uff0c\u8bf7\u5728 \u0050\u0061\u0067\u0065\u0073 \u91cc\u7ed1\u5b9a \u0044\u0042', 500);
+  await ensureSchema(db);
 
   const body = await request.json();
 
