@@ -70,8 +70,8 @@ function renderBooks() {
   $('#brochureGrid').innerHTML = books.map((book) => {
     const [c1,c2] = palette(book.id), image = coverUrl(book), badge = book.archived_at ? '<span class="badge archived">已归档</span>' : book.stock < 3 ? '<span class="badge low">库存紧张</span>' : '';
     const iconButton = (action, label) => `<button data-action="${action}" data-id="${book.id}" title="${label}" aria-label="${label}">${icons[action]}</button>`;
-    const actions = book.archived_at ? iconButton('restore','恢复宣传册') : iconButton('register','领用或归还')+iconButton('adjust','修改库存')+iconButton('edit','编辑资料')+iconButton('archive','归档宣传册');
-    return `<article class="book-card glass ${book.archived_at ? 'archived' : ''}" data-book-id="${book.id}" tabindex="0" role="button" aria-label="打开${escapeHtml(book.name)}快捷操作" style="--c1:${c1};--c2:${c2}">${badge}<div class="cover">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(book.name)}封面" loading="lazy" onerror="this.remove()">` : ''}<span class="cover-label">BROCHURE</span><strong class="cover-title">${escapeHtml(book.name)}</strong></div><div class="book-body"><div class="book-category">${escapeHtml(book.category)}</div><div class="book-title">${escapeHtml(book.name)}</div><div class="book-meta"><div class="stock ${book.stock < 3 ? 'low' : ''}"><strong>${book.stock}</strong> <span>份可用</span></div><div class="card-actions">${actions}</div></div></div></article>`;
+    const actions = book.archived_at ? iconButton('restore','恢复宣传册') : iconButton('edit','编辑资料')+iconButton('archive','归档宣传册');
+    return `<article class="book-card glass ${book.archived_at ? 'archived' : ''}" data-book-id="${book.id}" tabindex="0" role="button" aria-label="打开${escapeHtml(book.name)}快捷操作" style="--c1:${c1};--c2:${c2}">${badge}<div class="cover">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(book.name)}封面" loading="lazy" onerror="this.remove()">` : ''}<span class="cover-label">BROCHURE</span><strong class="cover-title">${escapeHtml(book.name)}</strong><span class="cover-category">${escapeHtml(book.category)}</span></div><div class="book-body"><div class="book-meta"><div class="stock ${book.stock < 3 ? 'low' : ''}"><strong>${book.stock}</strong> <span>份可用</span></div><div class="card-actions">${actions}</div></div></div></article>`;
   }).join('') || '<div class="empty glass">没有符合条件的宣传册</div>';
 }
 
@@ -130,6 +130,7 @@ function openBookDialog(book = null) {
   $('#brochureForm').reset(); state.pendingCover = null; $('#coverPreview').classList.remove('visible'); $('#dropHint').classList.remove('hidden');
   $('#brochureId').value = book?.id || ''; $('#brochureDialogTitle').textContent = book ? '编辑宣传册' : '新增宣传册'; $('#brochureDialogHint').textContent = book ? 'EDIT BROCHURE' : 'NEW BROCHURE';
   $('#initialStockField').classList.toggle('hidden', Boolean(book)); $('#brochureStock').required = !book;
+  $('#editBack').classList.toggle('hidden', !book || $('#quickDialog').dataset.bookId !== String(book.id));
   if (book) { $('#brochureName').value = book.name; $('#brochureCategory').value = book.category_id; const url = coverUrl(book); if (url) { $('#coverPreview').src = url; $('#coverPreview').classList.add('visible'); $('#dropHint').classList.add('hidden'); } }
   $('#brochureDialog').showModal(); setTimeout(() => $('#brochureName').focus(), 20);
 }
@@ -163,6 +164,11 @@ function updateQuickExpected() {
 
 function openAdjust(book) {
   $('#quickDialog').close(); $('#adjustBrochureId').value = book.id; $('#adjustBookName').textContent = `${book.name} · 当前库存 ${book.stock} 份`; $('#actualStock').value = book.stock; $('#adjustPerson').value = localStorage.getItem('cymanage-person') || ''; $('#adjustDialog').showModal();
+}
+
+function returnToQuick(dialog) {
+  const book = state.brochures.find((item) => item.id === Number($('#quickDialog').dataset.bookId));
+  dialog.close(); if (book) openQuickDialog(book);
 }
 
 async function compressCover(file) {
@@ -212,6 +218,7 @@ $('#brochureGrid').addEventListener('click', (event) => {
   if (!card) return; const book = state.brochures.find((item) => item.id === Number(card.dataset.bookId));
   if (!button) return openQuickDialog(book);
   event.stopPropagation();
+  $('#quickDialog').dataset.bookId = book.id;
   if (button.dataset.action === 'register') openQuickDialog(book);
   if (button.dataset.action === 'adjust') openAdjust(book);
   if (button.dataset.action === 'edit') openBookDialog(book);
@@ -221,6 +228,7 @@ $('#brochureGrid').addEventListener('click', (event) => {
 $('#brochureGrid').addEventListener('keydown',(event)=>{if((event.key==='Enter'||event.key===' ')&&!event.target.closest('[data-action]')){event.preventDefault();const card=event.target.closest('[data-book-id]');const book=state.brochures.find((item)=>item.id===Number(card?.dataset.bookId));if(book)openQuickDialog(book);}});
 $('#quickDialog').addEventListener('click',(event)=>{const button=event.target.closest('[data-quick]');if(!button)return;const book=state.brochures.find((item)=>item.id===Number($('#quickDialog').dataset.bookId));if(!book)return;if(button.dataset.quick==='receive'||button.dataset.quick==='return')openQuickMovement(button.dataset.quick);if(button.dataset.quick==='adjust')openAdjust(book);if(button.dataset.quick==='edit'){$('#quickDialog').close();openBookDialog(book);}});
 $('#quickBack').onclick=()=>{$('#quickMovementForm').classList.add('hidden');$('#quickActions').classList.remove('hidden');};$('#quickQuantity').oninput=updateQuickExpected;
+$('#adjustBack').onclick=()=>returnToQuick($('#adjustDialog'));$('#editBack').onclick=()=>returnToQuick($('#brochureDialog'));
 $('#quickMovementForm').onsubmit=async(event)=>{event.preventDefault();setBusy(event.currentTarget,true,'正在提交…');try{const bookId=Number($('#quickDialog').dataset.bookId),person=$('#quickPerson').value,movement=$('#quickDialog').dataset.movement;await api('/api/movements',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({brochureId:bookId,person,type:movement,quantity:Number($('#quickQuantity').value)})});localStorage.setItem('cymanage-person',person);$('#quickDialog').close();await loadSummary(false);toast(movement==='receive'?'领用登记成功':'归还登记成功');}catch(error){toast(error.message,'error');}finally{setBusy(event.currentTarget,false);}};
 
 $('#brochureForm').onsubmit = async (event) => { event.preventDefault(); setBusy(event.currentTarget, true, '正在保存…'); try { const id = $('#brochureId').value, coverKey = await uploadCover(), payload = { name:$('#brochureName').value, categoryId:Number($('#brochureCategory').value) }; if (!id) payload.stock = Number($('#brochureStock').value); if (coverKey !== undefined) payload.coverKey = coverKey; await api(id ? `/api/brochures/${id}` : '/api/brochures', { method:id ? 'PATCH':'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload) }); $('#brochureDialog').close(); await loadSummary(false); toast(id ? '宣传册已更新':'宣传册已添加'); } catch (error) { toast(error.message,'error'); } finally { setBusy(event.currentTarget,false); } };

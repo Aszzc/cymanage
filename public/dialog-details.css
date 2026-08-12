@@ -1,0 +1,5 @@
+.cover-category{position:absolute;z-index:3;right:12px;bottom:12px;max-width:calc(100% - 24px);padding:5px 9px;border-radius:999px;background:rgba(15,23,42,.3);color:#fff;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;backdrop-filter:blur(9px)}
+.cover-title{bottom:48px}
+.book-body{padding-top:14px}.book-meta{width:100%}.card-actions{margin-left:auto}
+.detail-dialog{gap:13px}.detail-banner{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:linear-gradient(135deg,#eefaff,#f0f3ff)}.detail-banner>span{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#dff5ff;color:#128bcf;font-size:21px}.detail-banner b,.detail-banner small{display:block}.detail-banner small{margin-top:3px;color:var(--muted);font-size:11px}.detail-dialog label{padding:0 1px}.detail-dialog footer{padding-top:5px;border-top:1px solid rgba(226,232,240,.7)}
+@media(max-width:760px){.cover-category{right:14px;bottom:14px;font-size:11px}.detail-dialog{padding:18px}.detail-dialog footer .btn{flex:1}}
