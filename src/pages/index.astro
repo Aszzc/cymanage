@@ -1,22 +1,859 @@
 ---
 const title = '册管家 · 宣传册库存';
 ---
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>{title}</title><style>
-:root{font-family:Inter,"Microsoft YaHei",sans-serif;color:#ecf5ff;background:#071224}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 10% 0,#244378 0,transparent 30%),radial-gradient(circle at 100% 100%,#3e1d5d 0,transparent 35%),#071224}button,input,select{font:inherit}button{cursor:pointer}.shell{max-width:1200px;margin:auto;padding:28px 20px 50px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.brand{font-weight:800;font-size:24px;letter-spacing:-1px}.brand i{font-style:normal;color:#69d4ff}.sub{color:#9aacc9;font-size:13px}.glass{background:rgba(16,34,65,.72);border:1px solid rgba(190,224,255,.16);box-shadow:0 18px 55px #0004;backdrop-filter:blur(20px);border-radius:22px}.tabs{display:flex;gap:8px;padding:7px;margin-bottom:20px;overflow:auto}.tab{border:0;background:transparent;color:#9aacc9;padding:10px 16px;border-radius:14px;white-space:nowrap}.tab.active{background:#63d2fa;color:#042033;font-weight:700}.panel{display:none}.panel.active{display:block}.head{display:flex;justify-content:space-between;gap:14px;align-items:center;margin:20px 0}.head h1{font-size:22px;margin:0}.primary{border:0;border-radius:13px;padding:11px 16px;background:linear-gradient(135deg,#6bd6fa,#8c9bff);color:#042033;font-weight:800}.search,input,select{background:#0b1a32;border:1px solid #25466e;border-radius:12px;color:#eaf4ff;padding:11px 13px;outline:none}.search{width:min(100%,300px)}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.card{padding:18px;position:relative;overflow:hidden}.card h3{font-size:17px;margin:13px 0 8px}.category{color:#98b4d6;font-size:13px}.stock{font-size:30px;font-weight:800}.stock small{font-size:13px;color:#9aacc9}.low .stock{color:#ff7187}.badge{position:absolute;right:12px;top:12px;font-size:12px;padding:5px 8px;border-radius:999px;background:#5d1f35;color:#ffafba}.del{float:right;background:none;border:0;color:#7793ba;font-size:16px}.empty{padding:40px;text-align:center;color:#95aac7}.form{padding:22px;max-width:760px}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field{display:grid;gap:7px;color:#b8cce7;font-size:13px}.wide{grid-column:1/-1}.type{display:flex;background:#0b1a32;border-radius:12px;padding:4px}.type button{flex:1;border:0;background:transparent;color:#9aacc9;padding:9px;border-radius:9px}.type button.active{background:#264d78;color:white}.remain{padding:14px;border-radius:13px;background:#0b1a32;color:#a9c5e7}.remain strong{color:#70d9f9}.records{overflow:auto}.records table{width:100%;border-collapse:collapse;min-width:680px}.records th,.records td{padding:13px 15px;text-align:left;border-bottom:1px solid #25405f;font-size:14px}.records th{color:#9db8d8;font-weight:500}.receive{color:#ff9cad}.return{color:#73e4bb}.filters{display:flex;gap:9px;flex-wrap:wrap}.filters>*{flex:1;min-width:140px}.pages{display:flex;justify-content:flex-end;gap:10px;align-items:center;padding:16px}.pages button{border:0;background:#24466e;color:white;border-radius:8px;padding:6px 10px}.modal{position:fixed;inset:0;background:#020817aa;display:none;place-items:center;padding:20px;z-index:5}.modal.show{display:grid}.modal .form{width:min(100%,480px)}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{font-size:20px}.close{background:none;border:0;color:white;font-size:24px}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);padding:12px 18px;border-radius:12px;background:#dceeff;color:#08213b;display:none;z-index:10}.toast.show{display:block}.categorybar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.chip{border:1px solid #32567c;background:#102a49;color:#c5dcf6;border-radius:999px;padding:7px 10px}.chip button{border:0;background:none;color:#88a7c8;margin-left:5px}@media(max-width:620px){.shell{padding:20px 14px}.top{align-items:flex-start;flex-direction:column;gap:5px}.head{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.grid{grid-template-columns:1fr}.filters>*{min-width:100%}}
-</style></head><body><main class="shell"><header class="top"><div><div class="brand">册<i>管家</i></div><div class="sub">宣传册库存与流转登记</div></div><div class="sub">实时库存 · 清晰可追溯</div></header><nav class="tabs glass"><button class="tab active" data-page="manage">宣传册管理</button><button class="tab" data-page="register">领取 / 归还登记</button><button class="tab" data-page="records">操作记录</button></nav>
-<section id="manage" class="panel active"><div class="head"><h1>宣传册管理</h1><button class="primary" onclick="openModal()">＋ 新增宣传册</button></div><div class="categorybar" id="categorybar"></div><input id="search" class="search" placeholder="搜索宣传册名称" /><div class="grid" id="brochures"></div></section>
-<section id="register" class="panel"><div class="head"><h1>领取 / 归还登记</h1></div><form class="form glass" id="operationForm"><div class="formgrid"><label class="field wide">登记人姓名<input required id="person" placeholder="请输入姓名" /></label><label class="field wide">宣传册<select required id="opBrochure"><option value="">请选择宣传册</option></select></label><div class="field wide">操作类型<div class="type"><button type="button" class="active" data-type="receive">领取</button><button type="button" data-type="return">归还</button></div></div><label class="field">数量<input required id="quantity" type="number" min="1" step="1" placeholder="0" /></label><div class="remain">当前余量<br/><strong id="remaining">请选择宣传册</strong></div><button class="primary wide" type="submit">提交登记</button></div></form></section>
-<section id="records" class="panel"><div class="head"><h1>操作记录</h1><button class="primary" id="export">导出 CSV</button></div><div class="filters"><input id="fPerson" placeholder="按姓名筛选"/><select id="fBrochure"><option value="">全部宣传册</option></select><select id="fType"><option value="">全部操作类型</option><option value="receive">领取</option><option value="return">归还</option></select></div><div class="records glass"><table><thead><tr><th>时间</th><th>姓名</th><th>宣传册</th><th>类型</th><th>数量</th></tr></thead><tbody id="recordBody"></tbody></table><div class="pages"><button id="prev">上一页</button><span id="pageText"></span><button id="next">下一页</button></div></div></section>
-</main><div class="modal" id="modal"><div class="form glass"><div class="modalhead"><h2>新增宣传册</h2><button class="close" onclick="closeModal()">×</button></div><form id="brochureForm"><div class="formgrid"><label class="field wide">宣传册名称<input id="newName" required placeholder="如：品牌产品手册" /></label><label class="field wide">所属分类<select id="newCategory" required></select></label><label class="field wide">初始库存<input id="newStock" required type="number" min="0" value="0" /></label><button class="primary wide">添加宣传册</button></div></form><hr style="border-color:#25405f;margin:22px 0"/><div class="field">分类管理</div><div id="modalCategories" class="categorybar"></div><form id="categoryForm" style="display:flex;gap:8px"><input id="categoryName" required placeholder="新增分类名称" style="flex:1"/><button class="primary">添加</button></form></div></div><div class="toast" id="toast"></div>
-<script>
-let data={categories:[],brochures:[],records:[]},type='receive',page=1;const $=s=>document.querySelector(s);const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function toast(m){$('#toast').textContent=m;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2600)}
-async function load(){const r=await fetch('/api/data');if(!r.ok){toast('数据库尚未就绪，请完成 D1 绑定和迁移');return}data=await r.json();render()}
-async function send(payload){const r=await fetch('/api/data',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}),j=await r.json();if(!r.ok)throw Error(j.error);await load()}
-function render(){let q=$('#search').value?.toLowerCase()||'';$('#brochures').innerHTML=data.brochures.filter(b=>b.name.toLowerCase().includes(q)).map(b=>`<article class="card glass ${b.stock<3?'low':''}">${b.stock<3?'<span class="badge">库存紧张</span>':''}<button class="del" onclick="deleteBrochure(${b.id})" title="删除">×</button><div class="category">${esc(b.category)}</div><h3><a href="#" onclick="goRegister(${b.id});return false" style="color:inherit;text-decoration:none">${esc(b.name)}</a></h3><div class="stock">${b.stock} <small>份</small></div></article>`).join('')||'<div class="empty">暂无匹配的宣传册</div>';
-$('#categorybar').innerHTML=data.categories.map(c=>`<span class="chip">${esc(c.name)} <button onclick="deleteCategory(${c.id})">×</button></span>`).join('');let opts='<option value="">请选择分类</option>'+data.categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');$('#newCategory').innerHTML=opts;let bop='<option value="">请选择宣传册</option>'+data.brochures.map(b=>`<option value="${b.id}">${esc(b.name)}（${b.stock}份）</option>`).join('');$('#opBrochure').innerHTML=bop;$('#fBrochure').innerHTML='<option value="">全部宣传册</option>'+data.brochures.map(b=>`<option>${esc(b.name)}</option>`).join('');$('#modalCategories').innerHTML=data.categories.map(c=>`<span class="chip">${esc(c.name)} <button onclick="deleteCategory(${c.id})">×</button></span>`).join('');renderRecords();remaining()}
-function renderRecords(){let p=$('#fPerson').value.toLowerCase(),b=$('#fBrochure').value,t=$('#fType').value,rs=data.records.filter(r=>(!p||r.person.toLowerCase().includes(p))&&(!b||r.brochure===b)&&(!t||r.operation_type===t)),max=Math.max(1,Math.ceil(rs.length/20));page=Math.min(page,max);let view=rs.slice((page-1)*20,page*20);$('#recordBody').innerHTML=view.map(r=>`<tr><td>${new Date(r.created_at+'Z').toLocaleString('zh-CN')}</td><td>${esc(r.person)}</td><td>${esc(r.brochure)}</td><td class="${r.operation_type}">${r.operation_type==='receive'?'领取':'归还'}</td><td>${r.quantity} 份</td></tr>`).join('')||'<tr><td colspan="5" class="empty">暂无记录</td></tr>';$('#pageText').textContent=`第 ${page} / ${max} 页，共 ${rs.length} 条`;$('#prev').disabled=page===1;$('#next').disabled=page===max}
-function remaining(){let b=data.brochures.find(x=>x.id==$('#opBrochure').value);$('#remaining').textContent=b?`${b.stock} 份${b.stock<3?' · 库存紧张':''}`:'请选择宣传册'}
-function openModal(){$('#modal').classList.add('show')}function closeModal(){$('#modal').classList.remove('show')}function goRegister(id){document.querySelector('[data-page="register"]').click();$('#opBrochure').value=id;remaining()}async function deleteBrochure(id){if(confirm('确认删除该宣传册及其操作记录？'))try{await send({action:'deleteBrochure',id});toast('已删除')}catch(e){toast(e.message)}}async function deleteCategory(id){if(confirm('确认删除此分类？'))try{await send({action:'deleteCategory',id});toast('已删除')}catch(e){toast(e.message)}}
-document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>{document.querySelectorAll('.tab,.panel').forEach(n=>n.classList.remove('active'));x.classList.add('active');$('#'+x.dataset.page).classList.add('active')});$('#search').oninput=render;$('#opBrochure').onchange=remaining;document.querySelectorAll('.type button').forEach(x=>x.onclick=()=>{type=x.dataset.type;document.querySelectorAll('.type button').forEach(b=>b.classList.toggle('active',b===x))});$('#brochureForm').onsubmit=async e=>{e.preventDefault();try{await send({action:'brochure',name:$('#newName').value,categoryId:+$('#newCategory').value,stock:+$('#newStock').value});e.target.reset();closeModal();toast('宣传册已添加')}catch(e){toast(e.message)}};$('#categoryForm').onsubmit=async e=>{e.preventDefault();try{await send({action:'category',name:$('#categoryName').value});e.target.reset();toast('分类已添加')}catch(e){toast(e.message)}};$('#operationForm').onsubmit=async e=>{e.preventDefault();let b=data.brochures.find(x=>x.id==$('#opBrochure').value),q=+$('#quantity').value;if(type==='receive'&&q>b.stock)return toast(`库存不足，当前仅剩 ${b.stock} 份`);try{await send({action:'operation',person:$('#person').value,brochureId:+$('#opBrochure').value,type,quantity:q});e.target.reset();toast('登记成功')}catch(e){toast(e.message)}};['#fPerson','#fBrochure','#fType'].forEach(s=>$(s).oninput=$(s).onchange=()=>{page=1;renderRecords()});$('#prev').onclick=()=>{page--;renderRecords()};$('#next').onclick=()=>{page++;renderRecords()};$('#export').onclick=()=>{let lines=['\ufeff时间,姓名,宣传册,操作类型,数量',...data.records.map(r=>[new Date(r.created_at+'Z').toLocaleString('zh-CN'),r.person,r.brochure,r.operation_type==='receive'?'领取':'归还',r.quantity].map(x=>'"'+String(x).replaceAll('"','""')+'"').join(','))];let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'}));a.download='宣传册操作记录.csv';a.click();URL.revokeObjectURL(a.href)};load();
-</script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <style>
+      :root {
+        font-family: Inter, "Microsoft YaHei", "PingFang SC", sans-serif;
+        color: #142033;
+        background: #eef5fb;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, .92), rgba(235, 246, 255, .88)),
+          radial-gradient(circle at 12% 12%, rgba(84, 169, 255, .24), transparent 32%),
+          radial-gradient(circle at 90% 86%, rgba(52, 211, 153, .18), transparent 30%),
+          #eef5fb;
+      }
+
+      button, input, select { font: inherit; }
+      button { cursor: pointer; }
+      button:disabled { cursor: not-allowed; opacity: .45; }
+
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 260px 1fr;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 24px 18px;
+        border-right: 1px solid rgba(148, 163, 184, .28);
+        background: rgba(255, 255, 255, .72);
+        backdrop-filter: blur(24px);
+        box-shadow: 12px 0 40px rgba(15, 23, 42, .06);
+      }
+
+      .brand {
+        display: grid;
+        gap: 4px;
+        margin-bottom: 26px;
+        padding: 0 6px;
+      }
+
+      .brand-title {
+        font-size: 24px;
+        font-weight: 850;
+        letter-spacing: 0;
+      }
+
+      .brand-title span { color: #0d87d5; }
+      .brand-sub { color: #64748b; font-size: 13px; }
+
+      .tabs {
+        display: grid;
+        gap: 8px;
+      }
+
+      .tab {
+        width: 100%;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 13px;
+        text-align: left;
+      }
+
+      .tab-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        background: #eef6ff;
+        color: #0d87d5;
+      }
+
+      .tab.active {
+        color: #075985;
+        background: rgba(14, 165, 233, .12);
+        font-weight: 750;
+      }
+
+      .tab.active .tab-icon {
+        color: #fff;
+        background: #0ea5e9;
+      }
+
+      .side-note {
+        margin-top: 24px;
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.7;
+        padding: 14px;
+        border-radius: 8px;
+        background: rgba(241, 245, 249, .82);
+        border: 1px solid rgba(148, 163, 184, .22);
+      }
+
+      .main {
+        min-width: 0;
+        padding: 28px 30px 48px;
+      }
+
+      .topline {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .topline h1 {
+        margin: 0;
+        font-size: 26px;
+        letter-spacing: 0;
+      }
+
+      .muted { color: #64748b; font-size: 13px; }
+
+      .panel { display: none; }
+      .panel.active { display: block; }
+
+      .glass {
+        background: rgba(255, 255, 255, .74);
+        border: 1px solid rgba(148, 163, 184, .26);
+        border-radius: 8px;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, .08);
+        backdrop-filter: blur(22px);
+      }
+
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .primary {
+        border: 0;
+        border-radius: 8px;
+        padding: 11px 15px;
+        background: #0ea5e9;
+        color: #fff;
+        font-weight: 760;
+        box-shadow: 0 10px 24px rgba(14, 165, 233, .22);
+      }
+
+      .secondary {
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, .76);
+        color: #334155;
+        font-weight: 650;
+      }
+
+      input, select {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, .86);
+        color: #142033;
+        padding: 10px 12px;
+        outline: none;
+      }
+
+      input:focus, select:focus {
+        border-color: #38bdf8;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, .14);
+      }
+
+      .search { width: min(100%, 320px); }
+
+      .categorybar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #cbd5e1;
+        background: rgba(255, 255, 255, .72);
+        color: #334155;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 13px;
+      }
+
+      .chip button {
+        border: 0;
+        background: transparent;
+        color: #94a3b8;
+        padding: 0;
+        line-height: 1;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        position: relative;
+        padding: 18px;
+        overflow: hidden;
+      }
+
+      .card h3 {
+        font-size: 17px;
+        margin: 12px 0 8px;
+      }
+
+      .card a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .category { color: #64748b; font-size: 13px; }
+      .stock { font-size: 32px; font-weight: 850; color: #0f172a; }
+      .stock small { font-size: 13px; color: #64748b; font-weight: 500; }
+      .low .stock { color: #dc2626; }
+
+      .badge {
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        font-size: 12px;
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: #fee2e2;
+        color: #b91c1c;
+        font-weight: 700;
+      }
+
+      .del {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        border: 1px solid #e2e8f0;
+        background: rgba(255, 255, 255, .68);
+        color: #64748b;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+      }
+
+      .empty {
+        padding: 38px;
+        text-align: center;
+        color: #64748b;
+      }
+
+      .form {
+        padding: 22px;
+        max-width: 760px;
+      }
+
+      .formgrid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 650;
+      }
+
+      .wide { grid-column: 1 / -1; }
+
+      .type {
+        display: flex;
+        gap: 6px;
+        background: #eef6ff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        padding: 4px;
+      }
+
+      .type button {
+        flex: 1;
+        border: 0;
+        background: transparent;
+        color: #475569;
+        padding: 9px;
+        border-radius: 6px;
+      }
+
+      .type button.active {
+        background: #0ea5e9;
+        color: #fff;
+        font-weight: 750;
+      }
+
+      .remain {
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+      }
+
+      .remain strong {
+        display: block;
+        margin-top: 3px;
+        color: #0284c7;
+        font-size: 18px;
+      }
+
+      .filters {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+
+      .filters > * {
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .records { overflow: auto; }
+      .records table { width: 100%; border-collapse: collapse; min-width: 680px; }
+      .records th, .records td {
+        padding: 13px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 14px;
+      }
+
+      .records th {
+        color: #64748b;
+        font-weight: 700;
+        background: rgba(248, 250, 252, .76);
+      }
+
+      .receive { color: #dc2626; font-weight: 700; }
+      .return { color: #059669; font-weight: 700; }
+
+      .pages {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        align-items: center;
+        padding: 15px;
+      }
+
+      .pages button {
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        color: #334155;
+        border-radius: 8px;
+        padding: 7px 11px;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, .34);
+        display: none;
+        place-items: center;
+        padding: 20px;
+        z-index: 5;
+      }
+
+      .modal.show { display: grid; }
+      .modal .form { width: min(100%, 500px); }
+
+      .modalhead {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      .modalhead h2 { font-size: 20px; margin: 0; }
+
+      .close {
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #475569;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+      }
+
+      .divider {
+        border: 0;
+        border-top: 1px solid #e2e8f0;
+        margin: 22px 0;
+      }
+
+      .inline-form {
+        display: flex;
+        gap: 8px;
+      }
+
+      .inline-form input { flex: 1; }
+
+      .toast {
+        position: fixed;
+        bottom: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 18px;
+        border-radius: 8px;
+        background: #0f172a;
+        color: #fff;
+        display: none;
+        z-index: 10;
+        box-shadow: 0 16px 36px rgba(15, 23, 42, .2);
+      }
+
+      .toast.show { display: block; }
+
+      @media (max-width: 820px) {
+        .app { grid-template-columns: 1fr; }
+        .sidebar {
+          position: static;
+          height: auto;
+          padding: 16px;
+          border-right: 0;
+          border-bottom: 1px solid rgba(148, 163, 184, .26);
+        }
+        .brand { margin-bottom: 14px; }
+        .tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .tab { justify-content: center; padding: 10px 8px; }
+        .tab-icon { display: none; }
+        .side-note { display: none; }
+        .main { padding: 20px 14px 40px; }
+        .topline { align-items: flex-start; flex-direction: column; }
+        .toolbar { align-items: flex-start; flex-direction: column; }
+        .search { width: 100%; }
+        .formgrid { grid-template-columns: 1fr; }
+        .wide { grid-column: auto; }
+        .grid { grid-template-columns: 1fr; }
+        .filters > * { min-width: 100%; }
+      }
+
+      @media (max-width: 420px) {
+        .tabs { grid-template-columns: 1fr; }
+        .tab { justify-content: flex-start; }
+        .tab-icon { display: grid; }
+        .inline-form { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-title">册<span>管家</span></div>
+          <div class="brand-sub">宣传册库存与流转登记</div>
+        </div>
+        <nav class="tabs">
+          <button class="tab active" data-page="manage"><span class="tab-icon">册</span>宣传册管理</button>
+          <button class="tab" data-page="register"><span class="tab-icon">登</span>领取 / 归还登记</button>
+          <button class="tab" data-page="records"><span class="tab-icon">记</span>操作记录</button>
+        </nav>
+        <div class="side-note">库存低于 3 份会自动标红。所有领取和归还都会进入操作记录。</div>
+      </aside>
+
+      <main class="main">
+        <section id="manage" class="panel active">
+          <div class="topline">
+            <div>
+              <h1>宣传册管理</h1>
+              <div class="muted">卡片式查看库存，支持分类维护与名称搜索。</div>
+            </div>
+            <button class="primary" onclick="openModal()">新增宣传册</button>
+          </div>
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <input id="search" class="search" placeholder="搜索宣传册名称" />
+            </div>
+          </div>
+          <div class="categorybar" id="categorybar"></div>
+          <div class="grid" id="brochures"></div>
+        </section>
+
+        <section id="register" class="panel">
+          <div class="topline">
+            <div>
+              <h1>领取 / 归还登记</h1>
+              <div class="muted">选择宣传册后实时显示当前余量，领取时自动校验库存。</div>
+            </div>
+          </div>
+          <form class="form glass" id="operationForm">
+            <div class="formgrid">
+              <label class="field wide">登记人姓名
+                <input required id="person" placeholder="请输入姓名" />
+              </label>
+              <label class="field wide">宣传册
+                <select required id="opBrochure"><option value="">请选择宣传册</option></select>
+              </label>
+              <div class="field wide">操作类型
+                <div class="type">
+                  <button type="button" class="active" data-type="receive">领取</button>
+                  <button type="button" data-type="return">归还</button>
+                </div>
+              </div>
+              <label class="field">数量
+                <input required id="quantity" type="number" min="1" step="1" placeholder="0" />
+              </label>
+              <div class="remain">当前余量<strong id="remaining">请选择宣传册</strong></div>
+              <button class="primary wide" type="submit">提交登记</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="records" class="panel">
+          <div class="topline">
+            <div>
+              <h1>操作记录</h1>
+              <div class="muted">按时间倒序展示，支持筛选与 CSV 导出。</div>
+            </div>
+            <button class="primary" id="export">导出 CSV</button>
+          </div>
+          <div class="filters">
+            <input id="fPerson" placeholder="按姓名筛选" />
+            <select id="fBrochure"><option value="">全部宣传册</option></select>
+            <select id="fType">
+              <option value="">全部操作类型</option>
+              <option value="receive">领取</option>
+              <option value="return">归还</option>
+            </select>
+          </div>
+          <div class="records glass">
+            <table>
+              <thead>
+                <tr><th>时间</th><th>姓名</th><th>宣传册</th><th>类型</th><th>数量</th></tr>
+              </thead>
+              <tbody id="recordBody"></tbody>
+            </table>
+            <div class="pages">
+              <button id="prev">上一页</button>
+              <span id="pageText"></span>
+              <button id="next">下一页</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal" id="modal">
+      <div class="form glass">
+        <div class="modalhead">
+          <h2>新增宣传册</h2>
+          <button class="close" onclick="closeModal()" aria-label="关闭">×</button>
+        </div>
+        <form id="brochureForm">
+          <div class="formgrid">
+            <label class="field wide">宣传册名称
+              <input id="newName" required placeholder="例如：品牌产品手册" />
+            </label>
+            <label class="field wide">所属分类
+              <select id="newCategory" required></select>
+            </label>
+            <label class="field wide">初始库存
+              <input id="newStock" required type="number" min="0" value="0" />
+            </label>
+            <button class="primary wide">添加宣传册</button>
+          </div>
+        </form>
+        <hr class="divider" />
+        <div class="field">分类管理</div>
+        <div id="modalCategories" class="categorybar"></div>
+        <form id="categoryForm" class="inline-form">
+          <input id="categoryName" required placeholder="新增分类名称" />
+          <button class="primary">添加</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      let data = { categories: [], brochures: [], records: [] };
+      let type = 'receive';
+      let page = 1;
+      const $ = (selector) => document.querySelector(selector);
+      const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      }[char]));
+
+      function toast(message) {
+        $('#toast').textContent = message;
+        $('#toast').classList.add('show');
+        setTimeout(() => $('#toast').classList.remove('show'), 2600);
+      }
+
+      async function load() {
+        const response = await fetch('/api/data');
+        if (!response.ok) {
+          toast('数据库尚未就绪，请完成 D1 绑定和迁移');
+          return;
+        }
+        data = await response.json();
+        render();
+      }
+
+      async function send(payload) {
+        const response = await fetch('/api/data', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        if (!response.ok) throw Error(result.error);
+        await load();
+      }
+
+      function render() {
+        const query = ($('#search').value || '').toLowerCase();
+        const brochures = data.brochures.filter((item) => item.name.toLowerCase().includes(query));
+        $('#brochures').innerHTML = brochures.map((item) => `
+          <article class="card glass ${item.stock < 3 ? 'low' : ''}">
+            ${item.stock < 3 ? '<span class="badge">库存紧张</span>' : ''}
+            <button class="del" onclick="deleteBrochure(${item.id})" title="删除">×</button>
+            <div class="category">${esc(item.category)}</div>
+            <h3><a href="#" onclick="goRegister(${item.id}); return false">${esc(item.name)}</a></h3>
+            <div class="stock">${item.stock} <small>份</small></div>
+          </article>
+        `).join('') || '<div class="empty glass">暂无匹配的宣传册</div>';
+
+        $('#categorybar').innerHTML = data.categories.map((item) =>
+          `<span class="chip">${esc(item.name)} <button onclick="deleteCategory(${item.id})" title="删除分类">×</button></span>`
+        ).join('');
+
+        $('#newCategory').innerHTML = '<option value="">请选择分类</option>' + data.categories.map((item) =>
+          `<option value="${item.id}">${esc(item.name)}</option>`
+        ).join('');
+
+        $('#opBrochure').innerHTML = '<option value="">请选择宣传册</option>' + data.brochures.map((item) =>
+          `<option value="${item.id}">${esc(item.name)}（${item.stock}份）</option>`
+        ).join('');
+
+        $('#fBrochure').innerHTML = '<option value="">全部宣传册</option>' + data.brochures.map((item) =>
+          `<option>${esc(item.name)}</option>`
+        ).join('');
+
+        $('#modalCategories').innerHTML = data.categories.map((item) =>
+          `<span class="chip">${esc(item.name)} <button onclick="deleteCategory(${item.id})" title="删除分类">×</button></span>`
+        ).join('');
+
+        renderRecords();
+        remaining();
+      }
+
+      function renderRecords() {
+        const person = $('#fPerson').value.toLowerCase();
+        const brochure = $('#fBrochure').value;
+        const opType = $('#fType').value;
+        const records = data.records.filter((record) =>
+          (!person || record.person.toLowerCase().includes(person)) &&
+          (!brochure || record.brochure === brochure) &&
+          (!opType || record.operation_type === opType)
+        );
+        const maxPage = Math.max(1, Math.ceil(records.length / 20));
+        page = Math.min(page, maxPage);
+        const current = records.slice((page - 1) * 20, page * 20);
+
+        $('#recordBody').innerHTML = current.map((record) => `
+          <tr>
+            <td>${new Date(record.created_at + 'Z').toLocaleString('zh-CN')}</td>
+            <td>${esc(record.person)}</td>
+            <td>${esc(record.brochure)}</td>
+            <td class="${record.operation_type}">${record.operation_type === 'receive' ? '领取' : '归还'}</td>
+            <td>${record.quantity} 份</td>
+          </tr>
+        `).join('') || '<tr><td colspan="5" class="empty">暂无记录</td></tr>';
+
+        $('#pageText').textContent = `第 ${page} / ${maxPage} 页，共 ${records.length} 条`;
+        $('#prev').disabled = page === 1;
+        $('#next').disabled = page === maxPage;
+      }
+
+      function remaining() {
+        const brochure = data.brochures.find((item) => item.id == $('#opBrochure').value);
+        $('#remaining').textContent = brochure ? `${brochure.stock} 份${brochure.stock < 3 ? ' · 库存紧张' : ''}` : '请选择宣传册';
+      }
+
+      function openModal() { $('#modal').classList.add('show'); }
+      function closeModal() { $('#modal').classList.remove('show'); }
+
+      function goRegister(id) {
+        document.querySelector('[data-page="register"]').click();
+        $('#opBrochure').value = id;
+        remaining();
+      }
+
+      async function deleteBrochure(id) {
+        if (!confirm('确认删除该宣传册及其操作记录？')) return;
+        try {
+          await send({ action: 'deleteBrochure', id });
+          toast('已删除');
+        } catch (error) {
+          toast(error.message);
+        }
+      }
+
+      async function deleteCategory(id) {
+        if (!confirm('确认删除此分类？')) return;
+        try {
+          await send({ action: 'deleteCategory', id });
+          toast('已删除');
+        } catch (error) {
+          toast(error.message);
+        }
+      }
+
+      document.querySelectorAll('.tab').forEach((tab) => {
+        tab.onclick = () => {
+          document.querySelectorAll('.tab, .panel').forEach((node) => node.classList.remove('active'));
+          tab.classList.add('active');
+          $('#' + tab.dataset.page).classList.add('active');
+        };
+      });
+
+      $('#search').oninput = render;
+      $('#opBrochure').onchange = remaining;
+
+      document.querySelectorAll('.type button').forEach((button) => {
+        button.onclick = () => {
+          type = button.dataset.type;
+          document.querySelectorAll('.type button').forEach((item) => item.classList.toggle('active', item === button));
+        };
+      });
+
+      $('#brochureForm').onsubmit = async (event) => {
+        event.preventDefault();
+        try {
+          await send({
+            action: 'brochure',
+            name: $('#newName').value,
+            categoryId: Number($('#newCategory').value),
+            stock: Number($('#newStock').value),
+          });
+          event.target.reset();
+          closeModal();
+          toast('宣传册已添加');
+        } catch (error) {
+          toast(error.message);
+        }
+      };
+
+      $('#categoryForm').onsubmit = async (event) => {
+        event.preventDefault();
+        try {
+          await send({ action: 'category', name: $('#categoryName').value });
+          event.target.reset();
+          toast('分类已添加');
+        } catch (error) {
+          toast(error.message);
+        }
+      };
+
+      $('#operationForm').onsubmit = async (event) => {
+        event.preventDefault();
+        const brochure = data.brochures.find((item) => item.id == $('#opBrochure').value);
+        const quantity = Number($('#quantity').value);
+        if (type === 'receive' && brochure && quantity > brochure.stock) {
+          toast(`库存不足，当前仅剩 ${brochure.stock} 份`);
+          return;
+        }
+
+        try {
+          await send({
+            action: 'operation',
+            person: $('#person').value,
+            brochureId: Number($('#opBrochure').value),
+            type,
+            quantity,
+          });
+          event.target.reset();
+          remaining();
+          toast('登记成功');
+        } catch (error) {
+          toast(error.message);
+        }
+      };
+
+      ['#fPerson', '#fBrochure', '#fType'].forEach((selector) => {
+        $(selector).oninput = $(selector).onchange = () => {
+          page = 1;
+          renderRecords();
+        };
+      });
+
+      $('#prev').onclick = () => {
+        page -= 1;
+        renderRecords();
+      };
+
+      $('#next').onclick = () => {
+        page += 1;
+        renderRecords();
+      };
+
+      $('#export').onclick = () => {
+        const lines = [
+          '\ufeff时间,姓名,宣传册,操作类型,数量',
+          ...data.records.map((record) => [
+            new Date(record.created_at + 'Z').toLocaleString('zh-CN'),
+            record.person,
+            record.brochure,
+            record.operation_type === 'receive' ? '领取' : '归还',
+            record.quantity,
+          ].map((value) => '"' + String(value).replaceAll('"', '""') + '"').join(',')),
+        ];
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' }));
+        link.download = '宣传册操作记录.csv';
+        link.click();
+        URL.revokeObjectURL(link.href);
+      };
+
+      load();
+    </script>
+  </body>
+</html>
