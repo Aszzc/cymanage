@@ -8,10 +8,16 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "check": "node --check public/app.js && astro check && astro build",
+    "test:smoke": "node scripts/smoke.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "astro": "^7.2.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3"
   }
 }

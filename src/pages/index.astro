@@ -3,107 +3,79 @@ const title = '册管家 · 宣传册库存';
 ---
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <style is:global>
-      :root{font-family:Inter,"Microsoft YaHei","PingFang SC",sans-serif;color:#142033;background:#eef5fb}
-      *{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(135deg,#fff,#eef7ff),radial-gradient(circle at 12% 12%,rgba(14,165,233,.18),transparent 30%),#eef5fb}
-      button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
-      .app{min-height:100vh;display:grid;grid-template-columns:260px 1fr}.sidebar{position:sticky;top:0;height:100vh;padding:24px 18px;border-right:1px solid #dbe4ee;background:rgba(255,255,255,.78);backdrop-filter:blur(22px);box-shadow:10px 0 34px rgba(15,23,42,.06)}
-      .brand{margin-bottom:26px;padding:0 6px}.brand-title{font-size:24px;font-weight:850}.brand-title span{color:#0d87d5}.brand-sub,.muted{color:#64748b;font-size:13px}.tabs{display:grid;gap:8px}.tab{border:0;border-radius:8px;background:transparent;color:#475569;display:flex;align-items:center;gap:10px;padding:12px 13px;text-align:left}.tab-icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:#eef6ff;color:#0d87d5}.tab.active{color:#075985;background:rgba(14,165,233,.12);font-weight:750}.tab.active .tab-icon{color:#fff;background:#0ea5e9}.side-note{margin-top:24px;color:#64748b;font-size:12px;line-height:1.7;padding:14px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0}
-      .main{min-width:0;padding:28px 30px 48px}.panel{display:none}.panel.active{display:block}.topline{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}.topline h1{margin:0;font-size:26px}
-      .glass{background:rgba(255,255,255,.78);border:1px solid rgba(148,163,184,.28);border-radius:8px;box-shadow:0 18px 50px rgba(15,23,42,.08);backdrop-filter:blur(20px)}
-      .primary{border:0;border-radius:8px;padding:11px 15px;background:#0ea5e9;color:white;font-weight:760;box-shadow:0 10px 24px rgba(14,165,233,.22)}input,select{width:100%;min-height:42px;border:1px solid #cbd5e1;border-radius:8px;background:rgba(255,255,255,.9);color:#142033;padding:10px 12px;outline:none}input:focus,select:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(14,165,233,.14)}
-      .toolbar{display:flex;gap:12px;margin-bottom:18px}.search{width:min(100%,320px)}.categorybar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #cbd5e1;background:rgba(255,255,255,.76);color:#334155;border-radius:999px;padding:7px 10px;font-size:13px}.chip button{border:0;background:transparent;color:#94a3b8;padding:0}
-      .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}.card{position:relative;padding:13px;overflow:hidden;border-radius:20px;transition:.22s}.card:hover{transform:translateY(-4px);box-shadow:0 24px 60px rgba(39,74,120,.16)}.cover{height:155px;border-radius:15px;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--c1),var(--c2));isolation:isolate}.cover:before{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-48px;top:-82px;background:rgba(255,255,255,.22);box-shadow:-95px 160px 0 rgba(255,255,255,.12)}.cover:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,rgba(255,255,255,.18),transparent 42%)}.cover img{position:relative;z-index:2;width:100%;height:100%;object-fit:cover}.cover-mark{position:absolute;z-index:1;left:17px;top:16px;color:rgba(255,255,255,.84);font-size:10px;letter-spacing:2px}.cover-title{position:absolute;z-index:1;left:17px;right:17px;bottom:19px;color:#fff;font-size:20px;line-height:1.25;font-weight:900;text-shadow:0 3px 14px rgba(0,0,0,.16)}.card-body{padding:12px 5px 4px}.card h3{font-size:17px;margin:5px 34px 8px 0}.link{border:0;background:transparent;color:inherit;text-align:left;padding:0;font-weight:800}.category{color:#64748b;font-size:12px}.stock{font-size:30px;font-weight:850;color:#0f172a}.stock small{font-size:13px;color:#64748b;font-weight:500}.low .stock{color:#dc2626}.badge{position:absolute;z-index:3;right:22px;top:22px;font-size:11px;padding:6px 9px;border-radius:999px;background:rgba(254,226,226,.92);color:#b91c1c;font-weight:700;backdrop-filter:blur(8px)}.del{position:absolute;right:14px;bottom:14px;border:1px solid #e2e8f0;background:rgba(255,255,255,.82);color:#64748b;width:29px;height:29px;border-radius:9px}.empty{padding:38px;text-align:center;color:#64748b}
-      .form{padding:22px;max-width:760px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:grid;gap:7px;color:#475569;font-size:13px;font-weight:650}.wide{grid-column:1/-1}.type{display:flex;gap:6px;background:#eef6ff;border:1px solid #dbeafe;border-radius:8px;padding:4px}.type button{flex:1;border:0;background:transparent;color:#475569;padding:9px;border-radius:6px}.type button.active{background:#0ea5e9;color:white;font-weight:750}.remain{padding:12px 14px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;color:#64748b}.remain strong{display:block;margin-top:3px;color:#0284c7;font-size:18px}
-      .filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.filters>*{flex:1;min-width:150px}.records{overflow:auto}.records table{width:100%;border-collapse:collapse;min-width:680px}.records th,.records td{padding:13px 15px;text-align:left;border-bottom:1px solid #e2e8f0;font-size:14px}.records th{color:#64748b;font-weight:700;background:#f8fafc}.receive{color:#dc2626;font-weight:700}.return{color:#059669;font-weight:700}.pages{display:flex;justify-content:flex-end;gap:10px;align-items:center;padding:15px}.pages button{border:1px solid #cbd5e1;background:white;color:#334155;border-radius:8px;padding:7px 11px}
-      .modal{position:fixed;inset:0;background:rgba(15,23,42,.34);display:none;place-items:center;padding:20px;z-index:5}.modal.show{display:grid}.modal .form{width:min(100%,500px)}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.modalhead h2{font-size:20px;margin:0}.close{border:1px solid #e2e8f0;background:white;color:#475569;width:32px;height:32px;border-radius:8px}.divider{border:0;border-top:1px solid #e2e8f0;margin:22px 0}.inline-form{display:flex;gap:8px}.inline-form input{flex:1}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);padding:12px 18px;border-radius:8px;background:#0f172a;color:white;display:none;z-index:10;box-shadow:0 16px 36px rgba(15,23,42,.2)}.toast.show{display:block}
-      @media(max-width:820px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;padding:16px;border-right:0;border-bottom:1px solid #dbe4ee}.brand{margin-bottom:14px}.tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.tab{justify-content:center;padding:10px 8px}.tab-icon,.side-note{display:none}.main{padding:20px 14px 40px}.topline{align-items:flex-start;flex-direction:column}.search{width:100%}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.grid{grid-template-columns:1fr}.filters>*{min-width:100%}}@media(max-width:420px){.tabs{grid-template-columns:1fr}.tab{justify-content:flex-start}.tab-icon{display:grid}.inline-form{flex-direction:column}}
-    </style>
-  </head>
-  <body>
-    <div class="app">
-      <aside class="sidebar">
-        <div class="brand"><div class="brand-title">册<span>管家</span></div><div class="brand-sub">宣传册库存与流转登记</div></div>
-        <nav class="tabs">
-          <button class="tab active" data-page="manage"><span class="tab-icon">册</span>宣传册管理</button>
-          <button class="tab" data-page="register"><span class="tab-icon">登</span>领取 / 归还登记</button>
-          <button class="tab" data-page="records"><span class="tab-icon">记</span>操作记录</button>
-        </nav>
-        <div class="side-note">库存低于 3 份会自动标红。所有领取和归还都会进入操作记录。</div>
-      </aside>
-      <main class="main">
-        <section id="manage" class="panel active">
-          <div class="topline"><div><h1>宣传册管理</h1><div class="muted">卡片式查看库存，支持分类维护与名称搜索。</div></div><button class="primary" id="openModal">新增宣传册</button></div>
-          <div class="toolbar"><input id="search" class="search" placeholder="搜索宣传册名称" /></div>
-          <div class="categorybar" id="categorybar"></div><div class="grid" id="brochures"></div>
-        </section>
-        <section id="register" class="panel">
-          <div class="topline"><div><h1>领取 / 归还登记</h1><div class="muted">选择宣传册后实时显示当前余量，领取时自动校验库存。</div></div></div>
-          <form class="form glass" id="operationForm"><div class="formgrid">
-            <label class="field wide">登记人姓名<input required id="person" placeholder="请输入姓名" /></label>
-            <label class="field wide">宣传册<select required id="opBrochure"><option value="">请选择宣传册</option></select></label>
-            <div class="field wide">操作类型<div class="type"><button type="button" class="active" data-type="receive">领取</button><button type="button" data-type="return">归还</button></div></div>
-            <label class="field">数量<input required id="quantity" type="number" min="1" step="1" placeholder="0" /></label>
-            <div class="remain">当前余量<strong id="remaining">请选择宣传册</strong></div>
-            <button class="primary wide" type="submit">提交登记</button>
-          </div></form>
-        </section>
-        <section id="records" class="panel">
-          <div class="topline"><div><h1>操作记录</h1><div class="muted">按时间倒序展示，支持筛选与 CSV 导出。</div></div><button class="primary" id="export">导出 CSV</button></div>
-          <div class="filters"><input id="fPerson" placeholder="按姓名筛选" /><select id="fBrochure"><option value="">全部宣传册</option></select><select id="fType"><option value="">全部操作类型</option><option value="receive">领取</option><option value="return">归还</option></select></div>
-          <div class="records glass"><table><thead><tr><th>时间</th><th>姓名</th><th>宣传册</th><th>类型</th><th>数量</th></tr></thead><tbody id="recordBody"></tbody></table><div class="pages"><button id="prev">上一页</button><span id="pageText"></span><button id="next">下一页</button></div></div>
-        </section>
-      </main>
-    </div>
-    <div class="modal" id="modal"><div class="form glass">
-      <div class="modalhead"><h2>新增宣传册</h2><button class="close" id="closeModal" aria-label="关闭">×</button></div>
-      <form id="brochureForm"><div class="formgrid">
-        <label class="field wide">宣传册名称<input id="newName" required placeholder="例如：品牌产品手册" /></label>
-        <label class="field wide">所属分类<select id="newCategory" required></select></label>
-        <label class="field">初始库存<input id="newStock" required type="number" min="0" value="0" /></label>
-        <label class="field">封面图片地址（可选）<input id="newCover" type="url" placeholder="https://..." /></label>
-        <button class="primary wide">添加宣传册</button>
-      </div></form>
-      <hr class="divider" /><div class="field">分类管理</div><div id="modalCategories" class="categorybar"></div>
-      <form id="categoryForm" class="inline-form"><input id="categoryName" required placeholder="新增分类名称" /><button class="primary">添加</button></form>
-    </div></div>
-    <div class="toast" id="toast"></div>
-    <script is:inline>
-      let data={categories:[],brochures:[],records:[]};let type='receive';let page=1;
-      const $=(s)=>document.querySelector(s);
-      const esc=(v)=>String(v??'').replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-      const toast=(m)=>{const el=$('#toast');el.textContent=m;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600)};
-      const openModal=()=>$('#modal').classList.add('show');
-      const closeModal=()=>$('#modal').classList.remove('show');
-      async function load(){const r=await fetch('/api/data',{cache:'no-store'});if(!r.ok){let m='数据加载失败，请检查 D1 绑定';try{const j=await r.json();if(j.error)m=j.error}catch{}toast(m);return}data=await r.json();render()}
-      async function send(payload){const r=await fetch('/api/data',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const j=await r.json();if(!r.ok)throw Error(j.error||'请求失败');await load()}
-      function colors(id){const sets=[['#0ea5e9','#2563eb'],['#8b5cf6','#ec4899'],['#10b981','#06b6d4'],['#f59e0b','#ef4444'],['#6366f1','#22d3ee']];return sets[id%sets.length]}
-      function render(){const q=($('#search').value||'').toLowerCase();const list=data.brochures.filter((b)=>b.name.toLowerCase().includes(q));$('#brochures').innerHTML=list.map((b)=>{const [c1,c2]=colors(b.id);const image=b.cover_url?`<img src="${esc(b.cover_url)}" alt="${esc(b.name)}封面" loading="lazy" onerror="this.remove()">`:'';return `<article class="card glass ${b.stock<3?'low':''}" style="--c1:${c1};--c2:${c2}">${b.stock<3?'<span class="badge">库存紧张</span>':''}<div class="cover">${image}<span class="cover-mark">BROCHURE</span><strong class="cover-title">${esc(b.name)}</strong></div><div class="card-body"><div class="category">${esc(b.category)}</div><h3><button class="link" data-action="register" data-id="${b.id}">${esc(b.name)}</button></h3><div class="stock">${b.stock} <small>份</small></div></div><button class="del" data-action="delete-brochure" data-id="${b.id}" title="删除">×</button></article>`}).join('')||'<div class="empty glass">暂无匹配的宣传册</div>';
-        $('#categorybar').innerHTML=data.categories.map((c)=>`<span class="chip">${esc(c.name)} <button data-action="delete-category" data-id="${c.id}" title="删除分类">×</button></span>`).join('');
-        $('#modalCategories').innerHTML=data.categories.map((c)=>`<span class="chip">${esc(c.name)} <button data-action="delete-category" data-id="${c.id}" title="删除分类">×</button></span>`).join('');
-        $('#newCategory').innerHTML='<option value="">请选择分类</option>'+data.categories.map((c)=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-        $('#opBrochure').innerHTML='<option value="">请选择宣传册</option>'+data.brochures.map((b)=>`<option value="${b.id}">${esc(b.name)}（${b.stock}份）</option>`).join('');
-        $('#fBrochure').innerHTML='<option value="">全部宣传册</option>'+data.brochures.map((b)=>`<option>${esc(b.name)}</option>`).join('');renderRecords();remaining()}
-      function renderRecords(){const p=$('#fPerson').value.toLowerCase(),b=$('#fBrochure').value,t=$('#fType').value;const rs=data.records.filter((r)=>(!p||r.person.toLowerCase().includes(p))&&(!b||r.brochure===b)&&(!t||r.operation_type===t));const max=Math.max(1,Math.ceil(rs.length/20));page=Math.min(page,max);const view=rs.slice((page-1)*20,page*20);$('#recordBody').innerHTML=view.map((r)=>`<tr><td>${new Date(r.created_at+'Z').toLocaleString('zh-CN')}</td><td>${esc(r.person)}</td><td>${esc(r.brochure)}</td><td class="${r.operation_type}">${r.operation_type==='receive'?'领取':'归还'}</td><td>${r.quantity} 份</td></tr>`).join('')||'<tr><td colspan="5" class="empty">暂无记录</td></tr>';$('#pageText').textContent=`第 ${page} / ${max} 页，共 ${rs.length} 条`;$('#prev').disabled=page===1;$('#next').disabled=page===max}
-      function remaining(){const b=data.brochures.find((x)=>x.id==$('#opBrochure').value);$('#remaining').textContent=b?`${b.stock} 份${b.stock<3?' · 库存紧张':''}`:'请选择宣传册'}
-      function goRegister(id){document.querySelector('[data-page="register"]').click();$('#opBrochure').value=id;remaining()}
-      async function deleteBrochure(id){if(!confirm('确认删除该宣传册及其操作记录？'))return;try{await send({action:'deleteBrochure',id});toast('已删除')}catch(e){toast(e.message)}}
-      async function deleteCategory(id){if(!confirm('确认删除此分类？'))return;try{await send({action:'deleteCategory',id});toast('已删除')}catch(e){toast(e.message)}}
-      document.addEventListener('click',(e)=>{const target=e.target.closest('[data-action]');if(!target)return;const id=Number(target.dataset.id);if(target.dataset.action==='register')goRegister(id);if(target.dataset.action==='delete-brochure')deleteBrochure(id);if(target.dataset.action==='delete-category')deleteCategory(id)});
-      $('#openModal').addEventListener('click',openModal);$('#closeModal').addEventListener('click',closeModal);document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeModal()});
-      document.querySelectorAll('.tab').forEach((tab)=>tab.addEventListener('click',()=>{document.querySelectorAll('.tab,.panel').forEach((n)=>n.classList.remove('active'));tab.classList.add('active');$('#'+tab.dataset.page).classList.add('active')}));
-      $('#search').addEventListener('input',render);$('#opBrochure').addEventListener('change',remaining);
-      document.querySelectorAll('.type button').forEach((btn)=>btn.addEventListener('click',()=>{type=btn.dataset.type;document.querySelectorAll('.type button').forEach((b)=>b.classList.toggle('active',b===btn))}));
-      $('#brochureForm').addEventListener('submit',async(e)=>{e.preventDefault();try{await send({action:'brochure',name:$('#newName').value,categoryId:Number($('#newCategory').value),stock:Number($('#newStock').value),coverUrl:$('#newCover').value.trim()});e.target.reset();closeModal();toast('宣传册已添加')}catch(err){toast(err.message)}});
-      $('#categoryForm').addEventListener('submit',async(e)=>{e.preventDefault();try{await send({action:'category',name:$('#categoryName').value});e.target.reset();toast('分类已添加')}catch(err){toast(err.message)}});
-      $('#operationForm').addEventListener('submit',async(e)=>{e.preventDefault();const b=data.brochures.find((x)=>x.id==$('#opBrochure').value);const q=Number($('#quantity').value);if(type==='receive'&&b&&q>b.stock){toast(`库存不足，当前仅剩 ${b.stock} 份`);return}try{await send({action:'operation',person:$('#person').value,brochureId:Number($('#opBrochure').value),type,quantity:q});e.target.reset();remaining();toast('登记成功')}catch(err){toast(err.message)}});
-      ['#fPerson','#fBrochure','#fType'].forEach((s)=>{$(s).addEventListener('input',()=>{page=1;renderRecords()});$(s).addEventListener('change',()=>{page=1;renderRecords()})});$('#prev').addEventListener('click',()=>{page-=1;renderRecords()});$('#next').addEventListener('click',()=>{page+=1;renderRecords()});
-      $('#export').addEventListener('click',()=>{const lines=['\ufeff时间,姓名,宣传册,操作类型,数量',...data.records.map((r)=>[new Date(r.created_at+'Z').toLocaleString('zh-CN'),r.person,r.brochure,r.operation_type==='receive'?'领取':'归还',r.quantity].map((v)=>'"'+String(v).replaceAll('"','""')+'"').join(','))];const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'}));a.download='宣传册操作记录.csv';a.click();URL.revokeObjectURL(a.href)});
-      load();
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f1f8ff" />
+  <title>{title}</title>
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar glass">
+      <a class="brand" href="#manage"><span class="brand-icon">册</span><span><strong>册管家</strong><small>宣传册库存与流转登记</small></span></a>
+      <nav class="nav" aria-label="主导航">
+        <button class="nav-item active" data-page="manage"><span>▦</span><em>库存管理</em></button>
+        <button class="nav-item" data-page="register"><span>⇄</span><em>领取归还</em></button>
+        <button class="nav-item" data-page="records"><span>≡</span><em>操作记录</em></button>
+      </nav>
+      <div class="side-tip"><b>库存提醒</b><span>少于 3 份时自动标红；每次库存变化都会永久留痕。</span></div>
+    </aside>
+
+    <main>
+      <div id="loading" class="loading"><div class="spinner"></div><span>正在读取库存…</span></div>
+      <div id="errorState" class="state-card hidden"><div class="state-icon">!</div><h2>暂时无法加载数据</h2><p id="errorText"></p><button class="btn primary" id="retry">重新加载</button></div>
+
+      <section class="page active" id="manage">
+        <header class="page-head"><div><p class="eyebrow">BROCHURE INVENTORY</p><h1>宣传册管理</h1><p>快速查看库存状态、盘点并维护宣传册。</p></div><button class="btn primary" data-open="brochureDialog">＋ 新增宣传册</button></header>
+        <div class="stats" id="stats">
+          <article class="stat glass"><span>宣传册</span><strong data-stat="brochure_count">—</strong><small>正在统计</small></article>
+          <article class="stat glass"><span>库存总量</span><strong data-stat="total_stock">—</strong><small>当前可用份数</small></article>
+          <article class="stat warning glass"><span>库存紧张</span><strong data-stat="low_count">—</strong><small>少于 3 份</small></article>
+          <article class="stat glass"><span>今日操作</span><strong data-stat="today_count">—</strong><small>领取、归还与调整</small></article>
+        </div>
+        <div class="toolbar glass">
+          <label class="search-field"><span>⌕</span><input id="search" placeholder="搜索宣传册名称" /></label>
+          <select id="categoryFilter" aria-label="分类筛选"><option value="">全部分类</option></select>
+          <select id="stockFilter" aria-label="库存筛选"><option value="">全部库存</option><option value="low">库存紧张</option><option value="normal">库存充足</option></select>
+          <label class="archive-toggle"><input id="showArchived" type="checkbox" /><span>查看归档</span></label>
+          <button class="btn subtle" data-open="categoryDialog">分类管理</button>
+        </div>
+        <div class="brochure-grid" id="brochureGrid"></div>
+      </section>
+
+      <section class="page" id="register">
+        <header class="page-head"><div><p class="eyebrow">STOCK MOVEMENT</p><h1>领取 / 归还登记</h1><p>提交前实时计算操作后的库存，避免误领和超领。</p></div></header>
+        <div class="register-layout">
+          <form class="form-card glass" id="movementForm">
+            <div class="segmented"><button type="button" class="active" data-movement="receive">领取</button><button type="button" data-movement="return">归还</button></div>
+            <label>登记人姓名<input id="person" required maxlength="50" autocomplete="name" placeholder="请输入姓名" /></label>
+            <label>选择宣传册<select id="movementBrochure" required><option value="">请选择宣传册</option></select></label>
+            <label>数量<input id="quantity" type="number" required min="1" max="999999" inputmode="numeric" value="1" /></label>
+            <div class="quick" aria-label="快捷数量"><span>快捷选择</span><button type="button" data-qty="1">1</button><button type="button" data-qty="5">5</button><button type="button" data-qty="10">10</button></div>
+            <p class="inline-error" id="stockError" role="alert"></p>
+            <button class="btn primary full" type="submit">确认登记</button>
+          </form>
+          <aside class="stock-preview glass"><span>当前余量</span><strong id="currentStock">—</strong><div class="stock-arrow">→</div><span>操作后预计</span><strong id="expectedStock">—</strong><p id="stockStatus">选择宣传册后显示库存</p></aside>
+        </div>
+      </section>
+
+      <section class="page" id="records">
+        <header class="page-head"><div><p class="eyebrow">AUDIT TRAIL</p><h1>操作记录</h1><p>所有库存变化按时间倒序展示，可筛选、撤销和导出。</p></div><button class="btn primary" id="exportCsv">导出 CSV</button></header>
+        <div class="record-filters glass"><input id="recordPerson" placeholder="按姓名筛选" /><select id="recordBrochure"><option value="">全部宣传册</option></select><select id="recordType"><option value="">全部类型</option><option value="receive">领取</option><option value="return">归还</option><option value="adjust">盘点调整</option><option value="reverse">撤销</option></select></div>
+        <div class="records glass"><table><thead><tr><th>时间</th><th>登记人</th><th>宣传册</th><th>类型</th><th>变化</th><th>原因</th><th></th></tr></thead><tbody id="recordBody"></tbody></table><div class="record-cards" id="recordCards"></div><footer><span id="pageInfo"></span><div><button class="btn subtle" id="prevPage">上一页</button><button class="btn subtle" id="nextPage">下一页</button></div></footer></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="brochureDialog"><form class="dialog-card" id="brochureForm"><header><div><small id="brochureDialogHint">新增资料</small><h2 id="brochureDialogTitle">新增宣传册</h2></div><button type="button" class="icon-btn" data-close>×</button></header><input type="hidden" id="brochureId" /><label>宣传册名称<input id="brochureName" required maxlength="80" placeholder="例如：企业品牌宣传册" /></label><label>所属分类<select id="brochureCategory" required></select></label><label id="initialStockField">初始库存<input id="brochureStock" type="number" min="0" max="999999" value="0" required /></label><label>宣传册封面 <small>可选，支持 JPG、PNG、WebP</small><div class="dropzone" id="dropzone" tabindex="0"><input id="coverFile" type="file" accept="image/jpeg,image/png,image/webp" /><img id="coverPreview" alt="封面预览" /><div id="dropHint"><b>点击或拖放图片</b><span>原图不超过 8MB，将自动裁切压缩</span></div></div></label><footer><button type="button" class="btn subtle" data-close>取消</button><button class="btn primary" type="submit">保存宣传册</button></footer></form></dialog>
+
+  <dialog id="categoryDialog"><div class="dialog-card"><header><div><small>ORGANIZE</small><h2>分类管理</h2></div><button type="button" class="icon-btn" data-close>×</button></header><form class="inline-add" id="categoryForm"><input id="categoryName" required maxlength="40" placeholder="输入新分类名称" /><button class="btn primary">添加</button></form><div class="category-list" id="categoryList"></div></div></dialog>
+
+  <dialog id="adjustDialog"><form class="dialog-card" id="adjustForm"><header><div><small>STOCKTAKE</small><h2>库存盘点</h2></div><button type="button" class="icon-btn" data-close>×</button></header><input type="hidden" id="adjustBrochureId" /><p class="dialog-note" id="adjustBookName"></p><label>实际库存<input id="actualStock" type="number" min="0" max="999999" required /></label><label>登记人<input id="adjustPerson" required maxlength="50" /></label><label>调整原因<textarea id="adjustReason" required maxlength="200" placeholder="例如：季度盘点、到货补充、破损报废"></textarea></label><footer><button type="button" class="btn subtle" data-close>取消</button><button class="btn primary">确认调整</button></footer></form></dialog>
+
+  <dialog id="confirmDialog"><form class="dialog-card compact" id="confirmForm"><header><div><small>请确认</small><h2 id="confirmTitle">确认操作</h2></div><button type="button" class="icon-btn" data-close>×</button></header><p id="confirmText"></p><label id="confirmReasonField" class="hidden">原因<textarea id="confirmReason" maxlength="200"></textarea></label><label id="confirmPersonField" class="hidden">操作人<input id="confirmPerson" maxlength="50" /></label><footer><button type="button" class="btn subtle" data-close>取消</button><button class="btn danger" id="confirmSubmit">确认</button></footer></form></dialog>
+  <div class="toast-stack" id="toasts" aria-live="polite"></div>
+  <script is:inline type="module" src="/app.js"></script>
+</body>
 </html>
