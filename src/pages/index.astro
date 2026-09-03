@@ -1,0 +1,85 @@
+---
+const title = '册管家 · 宣传册库存';
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f1f8ff" />
+  <title>{title}</title>
+  <link rel="stylesheet" href="/app.css" />
+  <link rel="stylesheet" href="/card-actions.css" />
+  <link rel="stylesheet" href="/quick-movement.css" />
+  <link rel="stylesheet" href="/dialog-details.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar glass">
+      <a class="brand" href="#manage"><span class="brand-icon">册</span><span><strong>册管家</strong><small>宣传册库存与流转登记</small></span></a>
+      <nav class="nav" aria-label="主导航">
+        <button class="nav-item active" data-page="manage"><span>▦</span><em>库存管理</em></button>
+        <button class="nav-item" data-page="register"><span>⇄</span><em>领取归还</em></button>
+        <button class="nav-item" data-page="records"><span>≡</span><em>操作记录</em></button>
+      </nav>
+      <div class="side-tip"><b>库存提醒</b><span>少于 3 份时自动标红；每次库存变化都会永久留痕。</span></div>
+    </aside>
+
+    <main>
+      <div id="loading" class="loading"><div class="spinner"></div><span>正在读取库存…</span></div>
+      <div id="errorState" class="state-card hidden"><div class="state-icon">!</div><h2>暂时无法加载数据</h2><p id="errorText"></p><button class="btn primary" id="retry">重新加载</button></div>
+
+      <section class="page active" id="manage">
+        <header class="page-head"><div><p class="eyebrow">BROCHURE INVENTORY</p><h1>宣传册管理</h1><p>快速查看库存状态、盘点并维护宣传册。</p></div><div class="head-actions"><button class="btn subtle" data-open="categoryDialog">分类管理</button><button class="btn primary" data-open="brochureDialog">＋ 新增宣传册</button></div></header>
+        <div class="stats" id="stats">
+          <article class="stat glass"><span>宣传册</span><strong data-stat="brochure_count">—</strong><small>正在统计</small></article>
+          <article class="stat glass"><span>库存总量</span><strong data-stat="total_stock">—</strong><small>当前可用份数</small></article>
+          <article class="stat warning glass"><span>库存紧张</span><strong data-stat="low_count">—</strong><small>少于 3 份</small></article>
+          <article class="stat glass"><span>今日操作</span><strong data-stat="today_count">—</strong><small>领取、归还与调整</small></article>
+        </div>
+        <div class="toolbar glass">
+          <label class="search-field"><span>⌕</span><input id="search" placeholder="搜索宣传册名称" /></label>
+          <select id="categoryFilter" aria-label="分类筛选"><option value="">全部分类</option></select>
+          <select id="stockFilter" aria-label="库存筛选"><option value="">全部库存</option><option value="low">库存紧张</option><option value="normal">库存充足</option></select>
+          <label class="archive-toggle"><input id="showArchived" type="checkbox" /><span>查看归档</span></label>
+        </div>
+        <div class="brochure-grid" id="brochureGrid"></div>
+      </section>
+
+      <section class="page" id="register">
+        <header class="page-head"><div><p class="eyebrow">STOCK MOVEMENT</p><h1>领取 / 归还登记</h1><p>提交前实时计算操作后的库存，避免误领和超领。</p></div></header>
+        <div class="register-layout">
+          <form class="form-card glass" id="movementForm">
+            <div class="segmented"><button type="button" class="active" data-movement="receive">领取</button><button type="button" data-movement="return">归还</button></div>
+            <label>登记人姓名<input id="person" required maxlength="50" autocomplete="name" placeholder="请输入姓名" /></label>
+            <label>选择宣传册<select id="movementBrochure" required><option value="">请选择宣传册</option></select></label>
+            <label>数量<input id="quantity" type="number" required min="1" max="999999" inputmode="numeric" value="1" /></label>
+            <div class="quick" aria-label="快捷数量"><span>快捷选择</span><button type="button" data-qty="1">1</button><button type="button" data-qty="5">5</button><button type="button" data-qty="10">10</button></div>
+            <p class="inline-error" id="stockError" role="alert"></p>
+            <button class="btn primary full" type="submit">确认登记</button>
+          </form>
+          <aside class="stock-preview glass"><span>当前余量</span><strong id="currentStock">—</strong><div class="stock-arrow">→</div><span>操作后预计</span><strong id="expectedStock">—</strong><p id="stockStatus">选择宣传册后显示库存</p></aside>
+        </div>
+      </section>
+
+      <section class="page" id="records">
+        <header class="page-head"><div><p class="eyebrow">AUDIT TRAIL</p><h1>操作记录</h1><p>所有库存变化按时间倒序展示，可筛选、撤销和导出。</p></div><button class="btn primary" id="exportCsv">导出 CSV</button></header>
+        <div class="record-filters glass"><input id="recordPerson" placeholder="按姓名筛选" /><select id="recordBrochure"><option value="">全部宣传册</option></select><select id="recordType"><option value="">全部类型</option><option value="receive">领取</option><option value="return">归还</option><option value="adjust">盘点调整</option><option value="reverse">撤销</option></select></div>
+        <div class="records glass"><table><thead><tr><th>时间</th><th>登记人</th><th>宣传册</th><th>类型</th><th>变化</th><th>原因</th><th></th></tr></thead><tbody id="recordBody"></tbody></table><div class="record-cards" id="recordCards"></div><footer><span id="pageInfo"></span><div><button class="btn subtle" id="prevPage">上一页</button><button class="btn subtle" id="nextPage">下一页</button></div></footer></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="brochureDialog"><form class="dialog-card detail-dialog" id="brochureForm"><header><div><small id="brochureDialogHint">新增资料</small><h2 id="brochureDialogTitle">新增宣传册</h2></div><button type="button" class="icon-btn" data-close>×</button></header><button type="button" class="quick-back hidden" id="editBack">← 返回操作选择</button><div class="detail-banner"><span>✎</span><div><b>宣传册资料</b><small>维护名称、分类和封面</small></div></div><input type="hidden" id="brochureId" /><label>宣传册名称<input id="brochureName" required maxlength="80" placeholder="例如：企业品牌宣传册" /></label><label>所属分类<select id="brochureCategory" required></select></label><label id="initialStockField">初始库存<input id="brochureStock" type="number" min="0" max="999999" value="0" required /></label><label>宣传册封面 <small>可选，支持 JPG、PNG、WebP</small><div class="dropzone" id="dropzone" tabindex="0"><input id="coverFile" type="file" accept="image/jpeg,image/png,image/webp" /><img id="coverPreview" alt="封面预览" /><div id="dropHint"><b>点击或拖放图片</b><span>原图不超过 8MB，将自动裁切压缩</span></div></div></label><footer><button type="button" class="btn subtle" data-close>取消</button><button class="btn primary" type="submit">保存宣传册</button></footer></form></dialog>
+
+  <dialog id="categoryDialog"><div class="dialog-card"><header><div><small>ORGANIZE</small><h2>分类管理</h2></div><button type="button" class="icon-btn" data-close>×</button></header><form class="inline-add" id="categoryForm"><input id="categoryName" required maxlength="40" placeholder="输入新分类名称" /><button class="btn primary">添加</button></form><div class="category-list" id="categoryList"></div></div></dialog>
+
+  <dialog id="adjustDialog"><form class="dialog-card detail-dialog" id="adjustForm"><header><div><small>STOCKTAKE</small><h2>修改库存</h2></div><button type="button" class="icon-btn" data-close>×</button></header><button type="button" class="quick-back" id="adjustBack">← 返回操作选择</button><div class="detail-banner"><span>⌁</span><div><b>库存盘点</b><small>按实际数量修正当前库存</small></div></div><input type="hidden" id="adjustBrochureId" /><p class="dialog-note" id="adjustBookName"></p><label>实际库存<input id="actualStock" type="number" min="0" max="999999" required /></label><label>登记人<input id="adjustPerson" required maxlength="50" /></label><label>调整原因<textarea id="adjustReason" required maxlength="200" placeholder="例如：季度盘点、到货补充、破损报废"></textarea></label><footer><button type="button" class="btn subtle" data-close>取消</button><button class="btn primary">确认调整</button></footer></form></dialog>
+
+  <dialog id="quickDialog"><div class="dialog-card quick-dialog"><header><div><small>QUICK ACTIONS</small><h2 id="quickBookName">宣传册操作</h2></div><button type="button" class="icon-btn" data-close>×</button></header><div class="quick-stock"><span>当前库存</span><strong id="quickBookStock">—</strong></div><div class="quick-actions" id="quickActions"><button data-quick="receive"><span class="quick-action-icon">↗</span><b>领用</b><small>登记领出数量</small></button><button data-quick="return"><span class="quick-action-icon">↙</span><b>归还</b><small>登记归还数量</small></button><button data-quick="adjust"><span class="quick-action-icon">⌁</span><b>修改库存</b><small>按实际库存盘点</small></button><button data-quick="edit"><span class="quick-action-icon">✎</span><b>编辑资料</b><small>名称、分类和封面</small></button></div><form id="quickMovementForm" class="quick-movement hidden"><button type="button" class="quick-back" id="quickBack">← 返回操作选择</button><div class="quick-mode"><span id="quickModeIcon">↗</span><div><b id="quickModeTitle">领用登记</b><small id="quickModeHint">登记领出数量</small></div></div><label>登记人姓名<input id="quickPerson" required maxlength="50" autocomplete="name" placeholder="请输入姓名" /></label><label>数量<input id="quickQuantity" type="number" required min="1" max="999999" inputmode="numeric" value="1" /></label><div class="quick-result"><span>操作后预计库存</span><strong id="quickExpected">—</strong></div><p class="inline-error" id="quickError" role="alert"></p><button class="btn primary full" type="submit">确认提交</button></form></div></dialog>
+
+  <dialog id="confirmDialog"><form class="dialog-card compact" id="confirmForm"><header><div><small>请确认</small><h2 id="confirmTitle">确认操作</h2></div><button type="button" class="icon-btn" data-close>×</button></header><p id="confirmText"></p><label id="confirmReasonField" class="hidden">原因<textarea id="confirmReason" maxlength="200"></textarea></label><label id="confirmPersonField" class="hidden">操作人<input id="confirmPerson" maxlength="50" /></label><footer><button type="button" class="btn subtle" data-close>取消</button><button class="btn danger" id="confirmSubmit">确认</button></footer></form></dialog>
+  <div class="toast-stack" id="toasts" aria-live="polite"></div>
+  <script is:inline type="module" src="/app.js"></script>
+</body>
+</html>
