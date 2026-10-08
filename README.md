@@ -13,13 +13,15 @@ Astro 静态前端 + Cloudflare Pages Functions + D1 的宣传册库存登记系
 
 ## 初始化 D1 数据库
 
-如果本机已经登录 Wrangler，可以在项目目录执行：
+首次创建 D1 数据库时，如果本机已经登录 Wrangler，可以在项目目录执行：
 
 ```bash
 npx wrangler d1 migrations apply cymanage --remote
 ```
 
-也可以在 Cloudflare 后台打开 D1 数据库 `cymanage`，进入 Console，把 `migrations/0001_initial.sql` 的内容粘贴执行。
+该命令会按顺序应用 `migrations/` 中尚未执行的迁移。本次代码沿用现有数据库表结构，已有数据库无需额外迁移。以后确有数据库结构变更时，再在发布对应代码前应用迁移；不要在生产请求中自动运行数据库迁移。
+
+也可以在 Cloudflare 后台打开 D1 数据库 `cymanage`，进入 Console，按顺序粘贴并执行 `migrations/` 中尚未应用的 SQL 文件。
 
 项目没有单独创建或维护 Workers 项目。动态接口使用 Cloudflare Pages 自带的 Functions，通过 `DB` 访问 D1；库存、记录和压缩后的封面均保存在 D1。
 
@@ -27,6 +29,7 @@ npx wrangler d1 migrations apply cymanage --remote
 
 ```bash
 npm run check
+npx wrangler d1 migrations apply cymanage --local
 npx wrangler pages dev dist
 npm run test:smoke
 ```

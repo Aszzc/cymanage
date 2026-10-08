@@ -12,6 +12,7 @@ const title = '册管家 · 宣传册库存';
   <link rel="stylesheet" href="/card-actions.css" />
   <link rel="stylesheet" href="/quick-movement.css" />
   <link rel="stylesheet" href="/dialog-details.css" />
+  <link rel="stylesheet" href="/batch-movement.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -47,19 +48,23 @@ const title = '册管家 · 宣传册库存';
       </section>
 
       <section class="page" id="register">
-        <header class="page-head"><div><p class="eyebrow">STOCK MOVEMENT</p><h1>领取 / 归还登记</h1><p>提交前实时计算操作后的库存，避免误领和超领。</p></div></header>
-        <div class="register-layout">
-          <form class="form-card glass" id="movementForm">
-            <div class="segmented"><button type="button" class="active" data-movement="receive">领取</button><button type="button" data-movement="return">归还</button></div>
+        <header class="page-head"><div><p class="eyebrow">STOCK MOVEMENT</p><h1>领取 / 归还登记</h1><p>可一次选择多种宣传册，分别登记数量。</p></div></header>
+        <form class="batch-register glass" id="movementForm">
+          <div class="batch-top">
+            <div class="segmented"><button type="button" class="active" data-movement="receive">领取 / 出库</button><button type="button" data-movement="return">归还 / 入库</button></div>
             <label>登记人姓名<input id="person" required maxlength="50" autocomplete="name" placeholder="请输入姓名" /></label>
-            <label>选择宣传册<select id="movementBrochure" required><option value="">请选择宣传册</option></select></label>
-            <label>数量<input id="quantity" type="number" required min="1" max="999999" inputmode="numeric" value="1" /></label>
-            <div class="quick" aria-label="快捷数量"><span>快捷选择</span><button type="button" data-qty="1">1</button><button type="button" data-qty="5">5</button><button type="button" data-qty="10">10</button></div>
-            <p class="inline-error" id="stockError" role="alert"></p>
-            <button class="btn primary full" type="submit">确认登记</button>
-          </form>
-          <aside class="stock-preview glass"><span>当前余量</span><strong id="currentStock">—</strong><div class="stock-arrow">→</div><span>操作后预计</span><strong id="expectedStock">—</strong><p id="stockStatus">选择宣传册后显示库存</p></aside>
-        </div>
+          </div>
+          <div class="batch-tools">
+            <label class="search-field"><span>⌕</span><input id="movementSearch" type="search" placeholder="搜索宣传册名称" aria-label="搜索宣传册名称" /></label>
+            <select id="movementCategory" aria-label="按分类筛选"><option value="">全部分类</option></select>
+            <label class="batch-fill">统一数量<input id="batchQuantity" type="number" min="1" max="999999" inputmode="numeric" value="50" aria-label="统一填充数量" /></label>
+            <button class="btn subtle" type="button" id="applyBatchQuantity">填入已选</button>
+          </div>
+          <div class="batch-selection-bar"><label><input type="checkbox" id="selectVisible" /> <span>全选当前结果</span></label><span id="selectionCount">已选 0 种</span></div>
+          <div class="batch-book-list" id="movementBooks" aria-label="宣传册选择清单"></div>
+          <p class="inline-error" id="batchError" role="alert"></p>
+          <footer class="batch-submit"><span id="batchSummary">请选择宣传册并填写数量</span><button class="btn primary" id="submitBatch" type="submit" disabled>确认批量登记</button></footer>
+        </form>
       </section>
 
       <section class="page" id="records">

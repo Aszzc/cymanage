@@ -1,6 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
-const state = { categories: [], brochures: [], stats: {}, records: [], movement: 'receive', recordPage: 1, recordPages: 1, pendingCover: null, confirmAction: null };
+const state = { categories: [], brochures: [], stats: {}, records: [], movement: 'receive', selectedMovements: new Map(), recordPage: 1, recordPages: 1, pendingCover: null, confirmAction: null };
 const typeLabels = { receive: '领取', return: '归还', adjust: '盘点调整', reverse: '撤销' };
 const icons = {
   register: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>',
@@ -22,7 +22,7 @@ async function api(path, options = {}) {
   const response = await fetch(path, options);
   const type = response.headers.get('content-type') || '';
   const body = type.includes('json') ? await response.json() : await response.text();
-  if (!response.ok) throw new Error(body?.error || '请求失败，请稍后重试');
+  if (!response.ok) throw Object.assign(new Error(body?.error || '请求失败，请稍后重试'), { status: response.status, code: body?.code });
   return body;
 }
 
@@ -65,11 +65,11 @@ function renderSummary() {
   $('#categoryFilter').innerHTML = `<option value="">全部分类</option>${categoryOptions}`;
   $('#categoryFilter').value = currentCategory;
   $('#brochureCategory').innerHTML = `<option value="">请选择分类</option>${categoryOptions}`;
-  const bookOptions = activeBooks().map((book) => `<option value="${book.id}">${escapeHtml(book.name)}（${book.stock}份）</option>`).join('');
-  const currentMovementBook = $('#movementBrochure').value, currentRecordBook = $('#recordBrochure').value;
-  $('#movementBrochure').innerHTML = `<option value="">请选择宣传册</option>${bookOptions}`; $('#movementBrochure').value = currentMovementBook;
+  const currentMovementCategory = $('#movementCategory').value, currentRecordBook = $('#recordBrochure').value;
+  $('#movementCategory').innerHTML = `<option value="">全部分类</option>${categoryOptions}`; $('#movementCategory').value = currentMovementCategory;
   $('#recordBrochure').innerHTML = `<option value="">全部宣传册</option>${state.brochures.map((book) => `<option value="${book.id}">${escapeHtml(book.name)}</option>`).join('')}`; $('#recordBrochure').value = currentRecordBook;
-  renderBooks(); renderCategories(); updateStockPreview();
+  for (const id of state.selectedMovements.keys()) if (!activeBooks().some((book) => book.id === id)) state.selectedMovements.delete(id);
+  renderBooks(); renderCategories(); renderMovementBooks();
 }
 
 function renderBooks() {
@@ -95,15 +95,42 @@ function showPage(name) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function updateStockPreview() {
-  const book = state.brochures.find((item) => String(item.id) === $('#movementBrochure').value), quantity = Number($('#quantity').value || 0);
-  if (!book) { $('#currentStock').textContent = '—'; $('#expectedStock').textContent = '—'; $('#stockStatus').textContent = '选择宣传册后显示库存'; $('#stockError').textContent = ''; return; }
-  const expected = book.stock + (state.movement === 'receive' ? -quantity : quantity);
-  $('#currentStock').textContent = `${book.stock} 份`; $('#expectedStock').textContent = `${expected} 份`;
-  const invalid = state.movement === 'receive' && expected < 0;
-  $('#stockError').textContent = invalid ? `库存不足，当前最多可领取 ${book.stock} 份` : '';
-  $('#stockStatus').textContent = expected < 3 ? '操作后将处于库存紧张状态' : '库存数量正常';
-  $('#movementForm button[type="submit"]').disabled = invalid;
+function visibleMovementBooks() {
+  const query = $('#movementSearch').value.trim().toLocaleLowerCase(), category = $('#movementCategory').value;
+  return activeBooks().filter((book) => (!query || book.name.toLocaleLowerCase().includes(query)) && (!category || String(book.category_id) === category));
+}
+
+function renderMovementBooks() {
+  const books = visibleMovementBooks();
+  $('#movementBooks').innerHTML = books.map((book) => {
+    const selected = state.selectedMovements.has(book.id), quantity = state.selectedMovements.get(book.id) ?? 1;
+    return `<div class="batch-book-choice"><label class="batch-book-toggle"><input type="checkbox" data-movement-select="${book.id}" ${selected ? 'checked' : ''} aria-label="选择${escapeHtml(book.name)}"><span class="batch-book-info"><strong>${escapeHtml(book.name)}</strong><small>${escapeHtml(book.category)} · 当前库存 ${book.stock} 份</small></span></label><input class="batch-book-quantity" type="number" min="1" max="999999" inputmode="numeric" value="${quantity}" data-movement-quantity="${book.id}" aria-label="${escapeHtml(book.name)}登记数量" ${selected ? '' : 'disabled'}></div>`;
+  }).join('') || '<div class="batch-empty">没有符合条件的宣传册</div>';
+  const selectedCount = state.selectedMovements.size;
+  const allVisibleSelected = books.length > 0 && books.every((book) => state.selectedMovements.has(book.id));
+  $('#selectVisible').checked = allVisibleSelected;
+  $('#selectVisible').indeterminate = !allVisibleSelected && books.some((book) => state.selectedMovements.has(book.id));
+  $('#selectionCount').textContent = `已选 ${selectedCount} 种`;
+  updateBatchSummary();
+}
+
+function updateBatchSummary() {
+  const selected = activeBooks().filter((book) => state.selectedMovements.has(book.id));
+  const total = selected.reduce((sum, book) => sum + (Number(state.selectedMovements.get(book.id)) || 0), 0);
+  const insufficient = state.movement === 'receive' ? selected.filter((book) => Number(state.selectedMovements.get(book.id)) > book.stock) : [];
+  const invalidQuantity = selected.filter((book) => !Number.isInteger(Number(state.selectedMovements.get(book.id))) || Number(state.selectedMovements.get(book.id)) < 1 || Number(state.selectedMovements.get(book.id)) > 999999);
+  $('#batchError').textContent = insufficient.length ? `库存不足：${insufficient.map((book) => `${book.name}（最多 ${book.stock} 份）`).join('、')}` : invalidQuantity.length ? '请为已选宣传册填写 1 至 999999 的整数数量' : '';
+  $('#batchSummary').textContent = selected.length ? `已选 ${selected.length} 种，共 ${total} 份` : '请选择宣传册并填写数量';
+  $('#submitBatch').disabled = !selected.length || Boolean(insufficient.length) || Boolean(invalidQuantity.length);
+}
+
+function updateBatchSelectionControls() {
+  const books = visibleMovementBooks();
+  const allVisibleSelected = books.length > 0 && books.every((book) => state.selectedMovements.has(book.id));
+  $('#selectVisible').checked = allVisibleSelected;
+  $('#selectVisible').indeterminate = !allVisibleSelected && books.some((book) => state.selectedMovements.has(book.id));
+  $('#selectionCount').textContent = `已选 ${state.selectedMovements.size} 种`;
+  updateBatchSummary();
 }
 
 function recordParams() {
@@ -215,8 +242,38 @@ $$('[data-close]').forEach((button) => button.addEventListener('click', () => bu
 $$('dialog').forEach((dialog) => dialog.addEventListener('click', (event) => { if (event.target === dialog) event.preventDefault(); }));
 $('#retry').onclick = () => loadSummary();
 ['#search','#categoryFilter','#stockFilter','#showArchived'].forEach((selector) => { $(selector).addEventListener('input', renderBooks); $(selector).addEventListener('change', renderBooks); });
-$$('[data-movement]').forEach((button) => button.onclick = () => { state.movement = button.dataset.movement; $$('[data-movement]').forEach((item) => item.classList.toggle('active', item === button)); updateStockPreview(); });
-$('#movementBrochure').onchange = updateStockPreview; $('#quantity').oninput = updateStockPreview; $$('[data-qty]').forEach((button) => button.onclick = () => { $('#quantity').value = button.dataset.qty; updateStockPreview(); });
+$$('[data-movement]').forEach((button) => button.onclick = () => { state.movement = button.dataset.movement; $$('[data-movement]').forEach((item) => item.classList.toggle('active', item === button)); updateBatchSummary(); });
+$('#person').addEventListener('input', updateBatchSummary);
+$('#movementSearch').oninput = renderMovementBooks;
+$('#movementCategory').onchange = renderMovementBooks;
+$('#selectVisible').onchange = () => { for (const book of visibleMovementBooks()) { const checkbox = $('#movementBooks').querySelector(`[data-movement-select="${book.id}"]`), quantity = $('#movementBooks').querySelector(`[data-movement-quantity="${book.id}"]`); if ($('#selectVisible').checked) { if (!state.selectedMovements.has(book.id)) state.selectedMovements.set(book.id, 1); checkbox.checked = true; quantity.value = state.selectedMovements.get(book.id); quantity.disabled = false; } else { state.selectedMovements.delete(book.id); checkbox.checked = false; quantity.disabled = true; } } updateBatchSelectionControls(); };
+$('#movementBooks').addEventListener('change', (event) => {
+  const checkbox = event.target.closest('[data-movement-select]');
+  if (!checkbox) return;
+  const id = Number(checkbox.dataset.movementSelect);
+  const quantity = $('#movementBooks').querySelector(`[data-movement-quantity="${id}"]`);
+  if (checkbox.checked) state.selectedMovements.set(id, Number(quantity.value) || 1);
+  else state.selectedMovements.delete(id);
+  quantity.disabled = !checkbox.checked;
+  updateBatchSelectionControls();
+});
+$('#movementBooks').addEventListener('input', (event) => {
+  const input = event.target.closest('[data-movement-quantity]');
+  if (!input) return;
+  const id = Number(input.dataset.movementQuantity), checked = state.selectedMovements.has(id);
+  if (checked) state.selectedMovements.set(id, input.value === '' ? '' : Number(input.value));
+  updateBatchSummary();
+});
+$('#applyBatchQuantity').onclick = () => {
+  const quantity = Number($('#batchQuantity').value);
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 999999) { $('#batchError').textContent = '统一数量需为 1 至 999999 的整数'; return; }
+  for (const id of state.selectedMovements.keys()) state.selectedMovements.set(id, quantity);
+  for (const [id, value] of state.selectedMovements) {
+    const input = $('#movementBooks').querySelector(`[data-movement-quantity="${id}"]`);
+    if (input) input.value = value;
+  }
+  updateBatchSummary();
+};
 $('#coverFile').onchange = (event) => event.target.files[0] && chooseCover(event.target.files[0]);
 ['dragenter','dragover'].forEach((name) => $('#dropzone').addEventListener(name, (event) => { event.preventDefault(); $('#dropzone').classList.add('drag'); }));
 ['dragleave','drop'].forEach((name) => $('#dropzone').addEventListener(name, (event) => { event.preventDefault(); $('#dropzone').classList.remove('drag'); }));
@@ -240,8 +297,8 @@ $('#quickBack').onclick=()=>{$('#quickMovementForm').classList.add('hidden');$('
 $('#adjustBack').onclick=()=>returnToQuick($('#adjustDialog'));$('#editBack').onclick=()=>returnToQuick($('#brochureDialog'));
 $('#quickMovementForm').onsubmit=async(event)=>{event.preventDefault();const form=event.currentTarget;setBusy(form,true,'正在提交…');try{const bookId=Number($('#quickDialog').dataset.bookId),person=$('#quickPerson').value,movement=$('#quickDialog').dataset.movement;await api('/api/movements',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({brochureId:bookId,person,type:movement,quantity:Number($('#quickQuantity').value)})});localStorage.setItem('cymanage-person',person);$('#quickDialog').close();await loadSummary(false);toast(movement==='receive'?'领用登记成功':'归还登记成功');}catch(error){toast(error.message,'error');}finally{setBusy(form,false);}};
 
-$('#brochureForm').onsubmit = async (event) => { event.preventDefault(); const form = event.currentTarget; setBusy(form, true, '正在保存…'); try { const id = $('#brochureId').value, coverKey = await uploadCover(), payload = { name:$('#brochureName').value, categoryId:Number($('#brochureCategory').value) }; if (!id) payload.stock = Number($('#brochureStock').value); if (coverKey !== undefined) payload.coverKey = coverKey; await api(id ? `/api/brochures/${id}` : '/api/brochures', { method:id ? 'PATCH':'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload) }); $('#brochureDialog').close(); await loadSummary(false); toast(id ? '宣传册已更新':'宣传册已添加'); } catch (error) { toast(error.message,'error'); } finally { setBusy(form,false); } };
-$('#movementForm').onsubmit = async (event) => { event.preventDefault(); const form = event.currentTarget; setBusy(form,true,'正在登记…'); try { const person=$('#person').value; await api('/api/movements',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({brochureId:Number($('#movementBrochure').value),person,type:state.movement,quantity:Number($('#quantity').value)})}); localStorage.setItem('cymanage-person',person); $('#quantity').value=1; await loadSummary(false); toast('库存登记成功'); } catch(error){toast(error.message,'error');} finally{setBusy(form,false);} };
+$('#brochureForm').onsubmit = async (event) => { event.preventDefault(); const form = event.currentTarget; let uploadedCoverKey; setBusy(form, true, '正在保存…'); try { const id = $('#brochureId').value; uploadedCoverKey = await uploadCover(); const payload = { name:$('#brochureName').value, categoryId:Number($('#brochureCategory').value) }; if (!id) payload.stock = Number($('#brochureStock').value); if (uploadedCoverKey !== undefined) payload.coverKey = uploadedCoverKey; await api(id ? `/api/brochures/${id}` : '/api/brochures', { method:id ? 'PATCH':'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload) }); $('#brochureDialog').close(); await loadSummary(false); toast(id ? '宣传册已更新':'宣传册已添加'); } catch (error) { if (uploadedCoverKey && error.status >= 400 && error.status < 500) { try { await api(`/api/covers/${encodeURIComponent(uploadedCoverKey)}`, { method:'DELETE' }); } catch {} } toast(error.message,'error'); } finally { setBusy(form,false); } };
+$('#movementForm').onsubmit = async (event) => { event.preventDefault(); const form = event.currentTarget; setBusy(form,true,'正在登记…'); try { const payload = { person:$('#person').value.trim(), type:state.movement, items:[...state.selectedMovements].map(([brochureId,quantity])=>({brochureId,quantity})) }; await api('/api/movements',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}); localStorage.setItem('cymanage-person',payload.person); state.selectedMovements.clear(); $('#movementSearch').value=''; $('#movementCategory').value=''; renderMovementBooks(); await loadSummary(false); toast(state.movement==='receive'?'批量出库登记成功':'批量入库登记成功'); } catch(error){ $('#batchError').textContent=error.message;toast(error.message,'error'); } finally{setBusy(form,false);} };
 $('#adjustForm').onsubmit = async (event) => { event.preventDefault(); const form = event.currentTarget; setBusy(form,true,'正在调整…'); try { const person=$('#adjustPerson').value; await api('/api/movements',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({brochureId:Number($('#adjustBrochureId').value),person,type:'adjust',actualStock:Number($('#actualStock').value),reason:$('#adjustReason').value})}); localStorage.setItem('cymanage-person',person); $('#adjustDialog').close(); await loadSummary(false); toast('盘点库存已更新'); } catch(error){toast(error.message,'error');} finally{setBusy(form,false);} };
 $('#categoryForm').onsubmit = async (event) => { event.preventDefault(); const form = event.currentTarget; setBusy(form,true,'添加中…'); try { await api('/api/categories',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:$('#categoryName').value})}); form.reset(); await loadSummary(false); toast('分类已添加'); } catch(error){toast(error.message,'error');} finally{setBusy(form,false);} };
 $('#categoryList').onclick = async (event) => { const save=event.target.closest('[data-category-save]'),remove=event.target.closest('[data-category-delete]'); try { if(save){await api(`/api/categories/${save.dataset.categorySave}`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({name:save.parentElement.querySelector('input').value})});await loadSummary(false);toast('分类已更新');} if(remove) confirmAction({title:'删除分类',text:'仅未被任何宣传册使用的分类可以删除。',action:async()=>api(`/api/categories/${remove.dataset.categoryDelete}`,{method:'DELETE'})}); } catch(error){toast(error.message,'error');} };
