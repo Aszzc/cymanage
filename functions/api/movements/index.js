@@ -1,15 +1,19 @@
 import { getDb } from '../../_lib/db.js';
 import { handleError, integer, json, readJson, text } from '../../_lib/http.js';
+import { beijingDateRange } from '../../_lib/beijing-date-range.js';
 
 export async function onRequestGet({ env, request }) {
   try {
     const db = await getDb(env), url = new URL(request.url);
     const page = integer(url.searchParams.get('page') || 1, '页码', 1, 100000), size = 20;
     const person = text(url.searchParams.get('person'), '姓名', 50, false), brochureId = Number(url.searchParams.get('brochureId') || 0), type = url.searchParams.get('type') || '';
+    const dateRange = beijingDateRange(url.searchParams.get('from') || '', url.searchParams.get('to') || '');
     const where = [], binds = [];
     if (person) { where.push('m.person LIKE ?'); binds.push(`%${person}%`); }
     if (brochureId) { where.push('m.brochure_id=?'); binds.push(brochureId); }
     if (type) { if (!['receive','return','adjust','reverse'].includes(type)) throw new Error('无效的操作类型'); where.push('m.movement_type=?'); binds.push(type); }
+    if (dateRange.start) { where.push('m.created_at>=?'); binds.push(dateRange.start); }
+    if (dateRange.end) { where.push('m.created_at<?'); binds.push(dateRange.end); }
     const clause = where.length ? `WHERE ${where.join(' AND ')}` : '';
     const count = await db.prepare(`SELECT COUNT(*) count FROM stock_movements m ${clause}`).bind(...binds).first();
     const rows = await db.prepare(`SELECT m.*,b.name brochure,original.id original_id,

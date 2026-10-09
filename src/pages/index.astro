@@ -9,10 +9,12 @@ const title = '册管家 · 宣传册库存';
   <meta name="theme-color" content="#f1f8ff" />
   <title>{title}</title>
   <link rel="stylesheet" href="/app.css" />
+  <link rel="stylesheet" href="/management.css" />
   <link rel="stylesheet" href="/card-actions.css" />
   <link rel="stylesheet" href="/quick-movement.css" />
   <link rel="stylesheet" href="/dialog-details.css" />
   <link rel="stylesheet" href="/batch-movement.css" />
+  <link rel="stylesheet" href="/ui-polish.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -22,6 +24,7 @@ const title = '册管家 · 宣传册库存';
         <button class="nav-item active" data-page="manage"><span>▦</span><em>库存管理</em></button>
         <button class="nav-item" data-page="register"><span>⇄</span><em>领取归还</em></button>
         <button class="nav-item" data-page="records"><span>≡</span><em>操作记录</em></button>
+        <button class="nav-item" data-page="inventoryReport"><span>▤</span><em>库存报表</em></button>
       </nav>
       <div class="side-tip"><b>库存提醒</b><span>少于 3 份时自动标红；每次库存变化都会永久留痕。</span></div>
     </aside>
@@ -35,16 +38,35 @@ const title = '册管家 · 宣传册库存';
         <div class="stats" id="stats">
           <article class="stat glass"><span>宣传册</span><strong data-stat="brochure_count">—</strong><small>正在统计</small></article>
           <article class="stat glass"><span>库存总量</span><strong data-stat="total_stock">—</strong><small>当前可用份数</small></article>
-          <article class="stat warning glass"><span>库存紧张</span><strong data-stat="low_count">—</strong><small>少于 3 份</small></article>
+          <article class="stat warning glass"><span>库存紧张</span><strong data-stat="low_count">—</strong><small id="lowStockCaption">少于 3 份</small></article>
           <article class="stat glass"><span>今日操作</span><strong data-stat="today_count">—</strong><small>领取、归还与调整</small></article>
         </div>
         <div class="toolbar glass">
           <label class="search-field"><span>⌕</span><input id="search" placeholder="搜索宣传册名称" /></label>
           <select id="categoryFilter" aria-label="分类筛选"><option value="">全部分类</option></select>
           <select id="stockFilter" aria-label="库存筛选"><option value="">全部库存</option><option value="low">库存紧张</option><option value="normal">库存充足</option></select>
+          <select id="bookSort" aria-label="排序"><option value="name">按名称排序</option><option value="stock-asc">库存从少到多</option><option value="stock-desc">库存从多到少</option></select>
+          <div class="view-switch" role="group" aria-label="显示方式"><button type="button" data-book-view="card">卡片</button><button type="button" data-book-view="table">表格</button></div>
           <label class="archive-toggle"><input id="showArchived" type="checkbox" /><span>查看归档</span></label>
         </div>
         <div class="brochure-grid" id="brochureGrid"></div>
+        <div class="book-table-wrap hidden" id="bookTableWrap"><p class="book-table-scroll-hint">↔ 左右滑动查看更多列</p><table class="book-table"><thead><tr><th>彩页名称</th><th>分类</th><th>当前库存</th><th>状态</th><th>操作</th></tr></thead><tbody id="bookTableBody"></tbody></table></div>
+        <footer class="book-pagination glass hidden" id="bookPagination" aria-label="宣传册分页">
+          <span id="bookPageInfo" aria-live="polite"></span>
+          <div id="bookPageControls"><button class="btn subtle" id="bookPrevPage" type="button">上一页</button><button class="btn subtle" id="bookNextPage" type="button">下一页</button></div>
+        </footer>
+      </section>
+
+      <section class="page" id="inventoryReport">
+        <header class="page-head"><div><p class="eyebrow">INVENTORY REPORT</p><h1>库存与补货</h1><p>查看分类库存汇总和需要补货的彩页。</p></div><button class="btn primary" id="exportRestockCsv" type="button">导出补货清单</button></header>
+        <div class="report-controls glass">
+          <label>库存低于<input id="reportThreshold" type="number" min="0" max="999999" value="3" inputmode="numeric" />份时提醒</label>
+          <label>补货目标<input id="reportTarget" type="number" min="1" max="999999" value="50" inputmode="numeric" />份</label>
+          <select id="reportCategory" aria-label="报表分类筛选"><option value="">全部分类</option></select>
+        </div>
+        <div class="report-stats" id="reportStats"></div>
+        <section class="report-section glass"><h2>分类库存汇总</h2><div class="report-table-wrap"><table class="book-table"><thead><tr><th>分类</th><th>彩页种数</th><th>库存总量</th><th>低库存种数</th></tr></thead><tbody id="categoryReportBody"></tbody></table></div></section>
+        <section class="report-section glass"><h2>建议补货清单 <small id="restockCount"></small></h2><div class="report-table-wrap"><table class="book-table"><thead><tr><th>彩页名称</th><th>分类</th><th>当前库存</th><th>建议补货</th></tr></thead><tbody id="restockReportBody"></tbody></table></div></section>
       </section>
 
       <section class="page" id="register">
@@ -60,8 +82,10 @@ const title = '册管家 · 宣传册库存';
             <label class="batch-fill">统一数量<input id="batchQuantity" type="number" min="1" max="999999" inputmode="numeric" value="50" aria-label="统一填充数量" /></label>
             <button class="btn subtle" type="button" id="applyBatchQuantity">填入已选</button>
           </div>
-          <div class="batch-selection-bar"><label><input type="checkbox" id="selectVisible" /> <span>全选当前结果</span></label><span id="selectionCount">已选 0 种</span></div>
+          <div class="batch-selection-bar"><label><input type="checkbox" id="selectVisible" /> <span id="selectVisibleLabel">全选本页</span></label><div class="batch-selection-status"><span id="selectionCount" aria-live="polite">已选 0 种</span><button class="selected-jump hidden" id="jumpToSelected" type="button">查看已选</button></div></div>
           <div class="batch-book-list" id="movementBooks" aria-label="宣传册选择清单"></div>
+          <div class="movement-pagination hidden" id="movementPagination"><span id="movementPageInfo"></span><div><button class="btn subtle" id="movementPrevPage" type="button">上一页</button><button class="btn subtle" id="movementNextPage" type="button">下一页</button></div></div>
+          <section class="selected-movements hidden" id="selectedMovementPanel" tabindex="-1"><h2>已选清单</h2><div id="selectedMovementList"></div></section>
           <p class="inline-error" id="batchError" role="alert"></p>
           <footer class="batch-submit"><span id="batchSummary">请选择宣传册并填写数量</span><button class="btn primary" id="submitBatch" type="submit" disabled>确认批量登记</button></footer>
         </form>
@@ -69,7 +93,7 @@ const title = '册管家 · 宣传册库存';
 
       <section class="page" id="records">
         <header class="page-head"><div><p class="eyebrow">AUDIT TRAIL</p><h1>操作记录</h1><p>所有库存变化按时间倒序展示，可筛选、撤销和导出。</p></div><button class="btn primary" id="exportCsv">导出 CSV</button></header>
-        <div class="record-filters glass"><input id="recordPerson" placeholder="按姓名筛选" /><select id="recordBrochure"><option value="">全部宣传册</option></select><select id="recordType"><option value="">全部类型</option><option value="receive">领取</option><option value="return">归还</option><option value="adjust">盘点调整</option><option value="reverse">撤销</option></select></div>
+        <div class="record-filters glass"><input id="recordPerson" placeholder="按姓名筛选" /><select id="recordBrochure"><option value="">全部宣传册</option></select><select id="recordType"><option value="">全部类型</option><option value="receive">领取</option><option value="return">归还</option><option value="adjust">盘点调整</option><option value="reverse">撤销</option></select><label>从<input id="recordFrom" type="date" aria-label="开始日期" /></label><label>到<input id="recordTo" type="date" aria-label="结束日期" /></label></div>
         <div class="records glass"><table><thead><tr><th>时间</th><th>登记人</th><th>宣传册</th><th>类型</th><th>变化</th><th>原因</th><th></th></tr></thead><tbody id="recordBody"></tbody></table><div class="record-cards" id="recordCards"></div><footer><span id="pageInfo"></span><div><button class="btn subtle" id="prevPage">上一页</button><button class="btn subtle" id="nextPage">下一页</button></div></footer></div>
       </section>
     </main>

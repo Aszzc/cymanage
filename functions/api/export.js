@@ -1,5 +1,6 @@
 import { getDb } from '../_lib/db.js';
 import { handleError } from '../_lib/http.js';
+import { beijingDateRange } from '../_lib/beijing-date-range.js';
 
 const safe = (value) => {
   let text = String(value ?? '');
@@ -12,6 +13,7 @@ export async function onRequestGet({ env, request }) {
     const db = await getDb(env), url = new URL(request.url);
     const person = String(url.searchParams.get('person') || '').trim().slice(0, 50);
     const brochureId = Number(url.searchParams.get('brochureId') || 0), type = url.searchParams.get('type') || '';
+    const dateRange = beijingDateRange(url.searchParams.get('from') || '', url.searchParams.get('to') || '');
     const where = [], binds = [];
     if (person) { where.push('m.person LIKE ?'); binds.push(`%${person}%`); }
     if (brochureId) { where.push('m.brochure_id=?'); binds.push(brochureId); }
@@ -19,6 +21,8 @@ export async function onRequestGet({ env, request }) {
       if (!['receive','return','adjust','reverse'].includes(type)) throw new Error('无效的操作类型');
       where.push('m.movement_type=?'); binds.push(type);
     }
+    if (dateRange.start) { where.push('m.created_at>=?'); binds.push(dateRange.start); }
+    if (dateRange.end) { where.push('m.created_at<?'); binds.push(dateRange.end); }
     const rows = await db.prepare(`SELECT m.created_at,m.person,b.name brochure,m.movement_type,m.quantity,m.delta,m.reason,m.reversal_of
       FROM stock_movements m JOIN brochures b ON b.id=m.brochure_id ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
       ORDER BY m.created_at DESC,m.id DESC`).bind(...binds).all();

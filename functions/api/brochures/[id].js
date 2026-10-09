@@ -11,7 +11,8 @@ export async function onRequestPatch({ request, env, params }) {
     await db.prepare('UPDATE brochures SET name=?,category_id=?,cover_key=?,updated_at=CURRENT_TIMESTAMP WHERE id=?')
       .bind(name, categoryId, coverKey, id).run();
     if (current.cover_key && current.cover_key !== coverKey) {
-      await db.prepare('DELETE FROM brochure_covers WHERE key=?').bind(current.cover_key).run();
+      await db.prepare('DELETE FROM brochure_covers WHERE key=? AND NOT EXISTS (SELECT 1 FROM brochures WHERE cover_key=?)')
+        .bind(current.cover_key, current.cover_key).run();
     }
     return json({ ok: true });
   } catch (error) { return handleError(error); }
