@@ -185,7 +185,7 @@ const coverUrl = (book) => book.cover_key ? `/api/covers/${encodeURIComponent(bo
 const palette = (id) => [['#0ea5e9','#2563eb'],['#8b5cf6','#e84e9a'],['#10b981','#06b6d4'],['#f59e0b','#ef4444'],['#6366f1','#22d3ee']][id % 5];
 const activeBooks = () => state.brochures.filter((book) => !book.archived_at);
 const storedInteger = (key, fallback) => { const stored = localStorage.getItem(key); if (stored === null || stored.trim() === '') return fallback; const value = Number(stored); return Number.isInteger(value) && value >= 0 && value <= 999999 ? value : fallback; };
-const inventorySettings = () => ({ threshold: storedInteger('cymanage-report-threshold', 3), target: Math.max(1, storedInteger('cymanage-report-target', 50)) });
+const inventorySettings = () => ({ threshold: storedInteger('cymanage-report-threshold', 30), target: Math.max(1, storedInteger('cymanage-report-target', 50)) });
 
 async function loadSummary(showLoader = true) {
   if (showLoader) { $('#loading').classList.remove('hidden'); $('#errorState').classList.add('hidden'); }

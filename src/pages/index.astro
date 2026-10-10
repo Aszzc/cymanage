@@ -26,7 +26,7 @@ const title = '册管家 · 宣传册库存';
         <button class="nav-item" data-page="records"><span>≡</span><em>操作记录</em></button>
         <button class="nav-item" data-page="inventoryReport"><span>▤</span><em>库存报表</em></button>
       </nav>
-      <div class="side-tip"><b>库存提醒</b><span>少于 3 份时自动标红；每次库存变化都会永久留痕。</span></div>
+      <div class="side-tip"><b>库存提醒</b><span>少于 30 份时自动标红；每次库存变化都会永久留痕。</span></div>
     </aside>
 
     <main>
@@ -38,7 +38,7 @@ const title = '册管家 · 宣传册库存';
         <div class="stats" id="stats">
           <article class="stat glass"><span>宣传册</span><strong data-stat="brochure_count">—</strong><small>正在统计</small></article>
           <article class="stat glass"><span>库存总量</span><strong data-stat="total_stock">—</strong><small>当前可用份数</small></article>
-          <article class="stat warning glass"><span>库存紧张</span><strong data-stat="low_count">—</strong><small id="lowStockCaption">少于 3 份</small></article>
+          <article class="stat warning glass"><span>库存紧张</span><strong data-stat="low_count">—</strong><small id="lowStockCaption">少于 30 份</small></article>
           <article class="stat glass"><span>今日操作</span><strong data-stat="today_count">—</strong><small>领取、归还与调整</small></article>
         </div>
         <div class="toolbar glass">
@@ -60,7 +60,7 @@ const title = '册管家 · 宣传册库存';
       <section class="page" id="inventoryReport">
         <header class="page-head"><div><p class="eyebrow">INVENTORY REPORT</p><h1>库存与补货</h1><p>查看分类库存汇总和需要补货的彩页。</p></div><button class="btn primary" id="exportRestockCsv" type="button">导出补货清单</button></header>
         <div class="report-controls glass">
-          <label>库存低于<input id="reportThreshold" type="number" min="0" max="999999" value="3" inputmode="numeric" />份时提醒</label>
+          <label>库存低于<input id="reportThreshold" type="number" min="0" max="999999" value="30" inputmode="numeric" />份时提醒</label>
           <label>补货目标<input id="reportTarget" type="number" min="1" max="999999" value="50" inputmode="numeric" />份</label>
           <select id="reportCategory" aria-label="报表分类筛选"><option value="">全部分类</option></select>
         </div>
